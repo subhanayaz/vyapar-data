@@ -34,7 +34,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     setLenisInstance(lenis);
 
     const handleHashScroll = () => {
-      if (window.location.pathname !== "/") return;
+      if (!window.location.hash) return;
       scrollToHash(window.location.hash);
     };
 
@@ -48,7 +48,6 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (pathname !== "/") return;
     if (!window.location.hash) return;
 
     const timer = window.setTimeout(() => {

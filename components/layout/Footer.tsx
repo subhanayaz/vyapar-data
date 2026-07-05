@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { FooterMark } from "@/components/ui/FooterMark";
+import { FooterLocationRows } from "@/components/layout/FooterLocations";
 import { SITE } from "@/data/site";
 import { sectionHref } from "@/lib/scroll";
 
@@ -21,6 +22,11 @@ export function Footer() {
           <Link href="/privacy">Privacy Policy</Link>
         </div>
       </div>
+
+      <section className="foot-locations" aria-label="Companies data by location">
+        <h2 className="foot-locations-title">Companies Data by Location</h2>
+        <FooterLocationRows />
+      </section>
 
       <FooterMark text={SITE.name} />
 

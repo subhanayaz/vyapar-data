@@ -39,6 +39,18 @@ export type PlanEnquiry = {
   isCustom?: boolean;
 };
 
+export function buildLocationEnquiryWhatsAppUrl(locationName: string) {
+  const message = [
+    "Hi VyaparData,",
+    "",
+    `I'd like companies data for ${locationName}.`,
+    "",
+    "Please share pricing and a sample.",
+  ].join("\n");
+
+  return `${WHATSAPP_URL_BASE}?text=${encodeURIComponent(message)}`;
+}
+
 export function buildPlanEnquiryWhatsAppUrl(plan: PlanEnquiry) {
   const lines = ["Hi VyaparData,", ""];
 
