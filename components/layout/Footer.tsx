@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { FooterMark } from "@/components/ui/FooterMark";
 import { SITE } from "@/data/site";
+import { sectionHref } from "@/lib/scroll";
 
 export function Footer() {
   return (
@@ -12,11 +13,11 @@ export function Footer() {
           <p className="foot-desc">{SITE.description}</p>
         </div>
         <div className="foot-links">
-          <a href="#categories">Categories</a>
-          <a href="#how">How It Works</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#faq">FAQ</a>
-          <a href="#contact">Contact</a>
+          <a href={sectionHref("categories")}>Categories</a>
+          <a href={sectionHref("how")}>How It Works</a>
+          <a href={sectionHref("pricing")}>Pricing</a>
+          <a href={sectionHref("faq")}>FAQ</a>
+          <a href={sectionHref("contact")}>Contact</a>
           <Link href="/privacy">Privacy Policy</Link>
         </div>
       </div>

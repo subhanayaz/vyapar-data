@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { setLenisInstance } from "@/lib/lenis-bridge";
+import { scrollToHash } from "@/lib/scroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.4,
@@ -29,11 +33,30 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     lenis.on("scroll", ScrollTrigger.update);
     setLenisInstance(lenis);
 
+    const handleHashScroll = () => {
+      if (window.location.pathname !== "/") return;
+      scrollToHash(window.location.hash);
+    };
+
+    window.addEventListener("hashchange", handleHashScroll);
+
     return () => {
+      window.removeEventListener("hashchange", handleHashScroll);
       setLenisInstance(null);
       lenis.destroy();
     };
   }, []);
+
+  useEffect(() => {
+    if (pathname !== "/") return;
+    if (!window.location.hash) return;
+
+    const timer = window.setTimeout(() => {
+      scrollToHash(window.location.hash);
+    }, 150);
+
+    return () => window.clearTimeout(timer);
+  }, [pathname]);
 
   return <>{children}</>;
 }

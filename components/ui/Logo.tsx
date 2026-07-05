@@ -32,7 +32,7 @@ function LogoMark() {
   );
 }
 
-export function Logo({ href = "#" }: LogoProps) {
+export function Logo({ href = "/" }: LogoProps) {
   return (
     <a href={href} className="logo">
       <LogoMark />

@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { Logo } from "@/components/ui/Logo";
-import { scrollToSection } from "@/lib/scroll";
+import { scrollToSection, sectionHref } from "@/lib/scroll";
 
 const LINKS = [
-  { href: "#categories", label: "Data" },
-  { href: "#how", label: "How It Works" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#faq", label: "FAQ" },
-  { href: "#contact", label: "Get free sample" },
+  { id: "categories", label: "Data" },
+  { id: "how", label: "How It Works" },
+  { id: "pricing", label: "Pricing" },
+  { id: "faq", label: "FAQ" },
+  { id: "contact", label: "Get free sample" },
 ];
 
 export function Nav() {
@@ -21,8 +21,8 @@ export function Nav() {
       <div className="nav-inner">
         <Logo />
         <ul className="nav-links">
-          {LINKS.filter((link) => link.href !== "#contact").map((link) => (
-            <li key={link.href}><a href={link.href}>{link.label}</a></li>
+          {LINKS.filter((link) => link.id !== "contact").map((link) => (
+            <li key={link.id}><a href={sectionHref(link.id)}>{link.label}</a></li>
           ))}
         </ul>
         <button
@@ -48,8 +48,8 @@ export function Nav() {
       <div className={`nav-mobile-menu${open ? " is-open" : ""}`}>
         <ul>
           {LINKS.map((link) => (
-            <li key={link.href}>
-              <a href={link.href} onClick={() => setOpen(false)}>{link.label}</a>
+            <li key={link.id}>
+              <a href={sectionHref(link.id)} onClick={() => setOpen(false)}>{link.label}</a>
             </li>
           ))}
         </ul>
