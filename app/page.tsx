@@ -1,4 +1,5 @@
 import { CoinFixed } from "@/components/ui/CoinFixed";
+import { HeroScrollCue } from "@/components/ui/HeroScrollCue";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/Hero";
@@ -15,6 +16,7 @@ export default function HomePage() {
     <>
       {/* CSS 3D coin — fixed behind everything, zero WebGL */}
       <CoinFixed />
+      <HeroScrollCue />
 
       <Nav />
 

@@ -39,6 +39,60 @@ body {
 
 ::selection { background: var(--white); color: var(--black); }
 
+html.is-loading,
+html.is-loading body {
+  overflow: hidden;
+}
+
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--black);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.65s ease, visibility 0.65s ease;
+}
+
+.page-loader.is-exiting {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.page-loader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.4rem;
+}
+
+.page-loader-ring {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-top-color: rgba(255,255,255,0.82);
+  border-right-color: rgba(255,255,255,0.28);
+  box-shadow: 0 0 28px rgba(255,255,255,0.06);
+  animation: loaderSpin 0.95s linear infinite;
+}
+
+.page-loader-brand {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.42);
+}
+
+@keyframes loaderSpin {
+  to { transform: rotate(360deg); }
+}
+
 /* ══════════════════════════════════════════════════════════
    CSS 3D PREMIUM COIN
 ══════════════════════════════════════════════════════════ */
@@ -762,6 +816,72 @@ body {
   opacity:0; animation: fadeUp 0.8s cubic-bezier(0.22,1,0.36,1) 1s forwards;
 }
 
+.hero-scroll-cue {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .hero-scroll-cue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    position: fixed;
+    bottom: max(1.6rem, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    z-index: 150;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .hero-scroll-cue.is-visible {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .hero-scroll-cue-icon {
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    animation: scrollCueBounce 2s ease-in-out infinite;
+  }
+
+  .hero-scroll-cue-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: rgba(255,255,255,0.92);
+    fill: none;
+  }
+
+  .hero-scroll-cue-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.72);
+    text-shadow: 0 1px 12px rgba(0,0,0,0.8);
+  }
+}
+
+@keyframes scrollCueBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(6px); }
+}
+
 .hero-actions {
   display: flex; gap: 1rem; flex-wrap: wrap;
   align-items: center; justify-content: flex-start;
@@ -1250,79 +1370,67 @@ footer.site-footer {
 
 /* ══════════════════════════════════════════════════════════
    TABLET  (≤ 900px)
-   Coin: centred, scaled 0.62×, positioned at top of viewport,
-   visible only in the hero — sections stack tightly right below it
-   with no reserved gap, and simply cover the (still-fixed) coin with
-   their own opaque backgrounds once scrolled past.
+   Coin: fullscreen-centred on load, hero content scrolls up over it.
 ══════════════════════════════════════════════════════════ */
 @media (max-width: 900px) {
 
   .legal-page { padding: 6rem 0 4rem; }
 
-  /* Shift coin to top of screen so it appears above content — cleared
-     below the fixed 64px navbar (+ a breathing-room gap) so the coin
-     never renders under/behind it. */
   .coin-fixed-wrap {
-    align-items: flex-start;
-    padding-top: calc(64px + 24px + 6vh);
+    align-items: center;
+    padding-top: 0;
+    clip-path: inset(64px 0 0 0);
+    -webkit-clip-path: inset(64px 0 0 0);
   }
 
-  /* Mobile/tablet: coin stays horizontally centred, matching the JS
-     default (x: 0) — but keeps the -90vh y offset so the mount-time
-     intro tween still has an off-screen "from" to drop in from. */
-  .coin-positioner { transform: translateY(-90vh); }
+  .coin-positioner { transform: translateY(calc(-100vh - 140px)); }
 
-  /* Scale coin to 62% — comfortable for tablet */
   .coin-size-wrap {
-    transform: scale(0.62);
-    transform-origin: center top;
+    --coin-base-scale: 0.50;
+    --coin-scroll-scale: 1;
+    transform: scale(calc(var(--coin-base-scale) * var(--coin-scroll-scale, 1)));
+    transform-origin: center center;
   }
 
-  /* Adjust vignette centre to match coin's new vertical position */
+  .coin-ambient {
+    width: 380px;
+    height: 380px;
+  }
+
   .coin-fixed-wrap::after {
     background: radial-gradient(
-      ellipse at 50% calc(20% + 88px),  /* tracks the navbar-cleared coin */
-      transparent 22%,
-      rgba(0,0,0,0.55) 52%,
-      rgba(0,0,0,0.88) 100%
+      ellipse at 50% 50%,
+      transparent 26%,
+      rgba(0,0,0,0.52) 58%,
+      rgba(0,0,0,0.90) 100%
     );
   }
 
-  /* ── Hero: coin visible at top, content below ── */
+  /* First viewport: coin only. Scroll reveals sticky hero content on top. */
   .hero-split {
     grid-template-columns: 1fr;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    min-height: 200vh;
+    display: block;
   }
 
   .hero-void { display: none; }
 
   .hero-panel {
+    position: sticky;
+    top: 0;
+    min-height: 100vh;
+    margin-top: 100vh;
     border-right: none;
-    /* Remove blur — it would smear through the transparent coin window */
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    /* Push content below the coin — coin top is calc(64px+24px+6vh)
-       (navbar clearance, see .coin-fixed-wrap), plus its scaled height
-       (0.62 × 290px ≈ 180px), plus a gap so text doesn't start flush
-       under it. */
-    padding: calc(6vh + 308px) var(--gutter) 4rem;
-    background: linear-gradient(
-      to bottom,
-      transparent   10%,
-      rgba(0,0,0,0.60) 40%,
-      rgba(0,0,0,0.84) 60%
-    );
-    flex: 1;
-    justify-content: flex-start; /* content starts at padding-top, not centred */
+    padding: 5.5rem var(--gutter) 4rem;
+    background: rgba(0,0,0,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    flex: unset;
+    justify-content: center;
   }
 
-  /* Sections stack directly with no reserved "peek" gap between them —
-     the coin is only ever shown in the hero; every section's own solid
-     background (.split-panel/.split-cards, already opaque here) simply
-     covers it once scrolled past, since .split-sec (z-index:10) already
-     sits above .coin-fixed-wrap (z-index:0). */
+  /* Sections stack directly — opaque panels cover the fixed coin once
+     scrolled past; .split-sec (z-index:10) sits above .coin-fixed-wrap. */
 
   /* Collapse 2-col to single column — matches the desktop rules'
      specificity (.split-head.panel-l/r) so this actually wins here */
@@ -1373,30 +1481,19 @@ footer.site-footer {
 
 /* ══════════════════════════════════════════════════════════
    MOBILE  (≤ 560px)
-   Coin slightly smaller — 48× scale.
 ══════════════════════════════════════════════════════════ */
 @media (max-width: 560px) {
 
-  /* Same navbar clearance as the tablet breakpoint above. */
-  .coin-fixed-wrap { padding-top: calc(64px + 20px + 4vh); }
-
   .coin-size-wrap {
-    transform: scale(0.48);
-    transform-origin: center top;
+    --coin-base-scale: 0.43;
   }
 
-  .coin-fixed-wrap::after {
-    background: radial-gradient(
-      ellipse at 50% calc(16% + 72px),
-      transparent 20%,
-      rgba(0,0,0,0.55) 48%,
-      rgba(0,0,0,0.90) 100%
-    );
+  .coin-ambient {
+    width: 320px;
+    height: 320px;
   }
 
-  /* Same logic as the tablet breakpoint: coin top calc(64px+20px+4vh) +
-     scaled height (0.48 × 290px ≈ 140px) + a gap. */
-  .hero-panel { padding: calc(4vh + 260px) var(--gutter) 3.5rem; }
+  .hero-panel { padding: 5rem var(--gutter) 3.5rem; }
 
   .cat-grid, .steps { grid-template-columns: 1fr; }
 

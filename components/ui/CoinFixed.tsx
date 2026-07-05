@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePageReady } from "@/components/providers/PageLoadGate";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -107,6 +108,7 @@ function coinOffsetPx() {
 }
 
 export function CoinFixed() {
+  const pageReady = usePageReady();
   const [particlesReady, setParticlesReady] = useState(false);
 
   useEffect(() => {
@@ -136,33 +138,47 @@ export function CoinFixed() {
   const tiltRef  = useRef<HTMLDivElement>(null);
   const coinRef  = useRef<HTMLDivElement>(null);
 
-  /* ── Idle float ─────────────────────────────────────────────── */
   useEffect(() => {
+    if (!pageReady) return;
     const el = coinRef.current;
     if (!el) return;
     const t = gsap.to(el, {
       y: -18, duration: 2.8, ease: "power1.inOut", yoyo: true, repeat: -1,
     });
     return () => { t.kill(); };
-  }, []);
+  }, [pageReady]);
 
   /* ── Intro: coin drops in from above on first load ────────────
-     CSS gives .coin-positioner a translateY(-90vh) default, so the
-     coin starts off-screen above before this even mounts. This tween
-     reads that as its "from" (same handoff trick as the x hero
-     default) and eases it down to rest — a one-time, mount-only
-     animation on posRef's y. It never touches x/rotateY, so it runs
-     fully independently of the scroll-driven slide/flip effect below:
-     scrolling immediately during the drop just works, anchored to the
-     hero section like always. */
+     Desktop: vertical drop on posRef.
+     Mobile/tablet: roll in from above — posRef y + tiltRef rotateX
+     (tumble) + coinRef rotateY (spin) for a coin rolling out feel. */
   useEffect(() => {
+    if (!pageReady) return;
+
     const pos = posRef.current;
+    const tilt = tiltRef.current;
+    const coin = coinRef.current;
     if (!pos) return;
-    const t = gsap.to(pos, {
+
+    const isMobile = window.matchMedia("(max-width: 900px)").matches;
+
+    if (isMobile && tilt && coin) {
+      gsap.set(tilt, { rotateX: -720, rotateZ: 8 });
+      gsap.set(coin, { rotateY: -540 });
+      gsap.set(pos, { y: -(window.innerHeight * 0.62 + 140) });
+
+      const timeline = gsap.timeline({ delay: 0.15 });
+      timeline.to(pos,  { y: 0, duration: 1.7, ease: "power3.out" }, 0);
+      timeline.to(tilt, { rotateX: 0, rotateZ: 0, duration: 1.7, ease: "power3.out" }, 0);
+      timeline.to(coin, { rotateY: 0, duration: 1.7, ease: "power3.out" }, 0);
+      return () => { timeline.kill(); };
+    }
+
+    const tween = gsap.to(pos, {
       y: 0, duration: 1.4, delay: 0.3, ease: "power3.out",
     });
-    return () => { t.kill(); };
-  }, []);
+    return () => { tween.kill(); };
+  }, [pageReady]);
 
   /* ── X-position + flip: a single deterministic function of scrollY,
      re-evaluated every frame — NOT multiple independent GSAP tweens on
@@ -311,10 +327,40 @@ export function CoinFixed() {
     return () => st.kill();
   }, []);
 
+  /* ── Mobile/tablet: coin eases back as hero content scrolls over ─ */
+  useEffect(() => {
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
+
+    const size = sizeRef.current;
+    const wrap = wrapRef.current;
+    const hero = document.querySelector("#hero");
+    if (!size || !wrap || !hero) return;
+
+    const st = ScrollTrigger.create({
+      trigger: hero,
+      start: "top top",
+      end: "55% top",
+      scrub: 0.85,
+      onUpdate: (self) => {
+        const progress = self.progress;
+        size.style.setProperty("--coin-scroll-scale", String(1 - progress * 0.12));
+        wrap.style.opacity = String(1 - progress * 0.4);
+      },
+    });
+
+    return () => {
+      st.kill();
+      size.style.removeProperty("--coin-scroll-scale");
+      wrap.style.opacity = "";
+    };
+  }, []);
+
   /* ── Mouse parallax → tiltRef only (GSAP never touches it) ──── */
   useEffect(() => {
     const tilt = tiltRef.current;
     if (!tilt) return;
+    if (window.matchMedia("(max-width: 900px)").matches) return;
+
     let tx = 0, ty = 0, cx = 0, cy = 0, raf: number;
 
     const onMove = (e: MouseEvent) => {

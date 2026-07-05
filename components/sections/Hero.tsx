@@ -1,12 +1,42 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { scrollToSection } from "@/lib/scroll";
 
+gsap.registerPlugin(ScrollTrigger);
+
 export function Hero() {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const isMobile = window.matchMedia("(max-width: 900px)").matches;
+    if (!isMobile) return;
+
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    gsap.set(panel, { opacity: 0, y: 40 });
+
+    const reveal = ScrollTrigger.create({
+      trigger: "#hero",
+      start: "top top",
+      end: "55% top",
+      scrub: 0.85,
+      onUpdate: (self) => {
+        const progress = self.progress;
+        gsap.set(panel, { opacity: progress, y: 40 * (1 - progress) });
+      },
+    });
+
+    return () => { reveal.kill(); };
+  }, []);
+
   return (
     <section className="hero-split" id="hero">
       {/* ── Content LEFT ── */}
-      <div className="hero-panel">
+      <div ref={panelRef} className="hero-panel">
         <div className="hero-badge">
           <span className="badge-dot" />
           Live now — no waitlist
