@@ -1,0 +1,1405 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;1,300&display=swap");
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --white:       #ffffff;
+  --black:       #000000;
+  --gray:        #a8a8a8;
+  --gray-dim:    rgba(168,168,168,0.55);
+  --glass:       rgba(255,255,255,0.042);
+  --glass-b:     rgba(255,255,255,0.08);
+  --glass-hover: rgba(255,255,255,0.07);
+  --text-sm:     0.875rem;
+  --text-base:   1rem;
+  --text-lg:     1.125rem;
+
+  /* Page never grows past this — on ultra-wide/4K screens the extra
+     width becomes side padding instead of stretching the layout.
+     One --gutter variable drives every section's horizontal padding,
+     so it stays identical everywhere and shrinks in lockstep at each
+     breakpoint below. */
+  --content-max: 1400px;
+  --gutter:      3.5rem;
+}
+
+@media (max-width: 900px) { :root { --gutter: 1.8rem; } }
+@media (max-width: 560px) { :root { --gutter: 1.2rem; } }
+
+html { scroll-behavior: auto; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: "Inter", sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--white); color: var(--black); }
+
+/* ══════════════════════════════════════════════════════════
+   CSS 3D PREMIUM COIN
+══════════════════════════════════════════════════════════ */
+
+.coin-fixed-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;       /* desktop: vertically centred */
+  justify-content: center;
+  background: var(--black);
+  overflow: hidden;
+}
+
+/* Desktop vignette — centred on coin */
+.coin-fixed-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 48%,
+    transparent 28%,
+    rgba(0,0,0,0.60) 62%,
+    rgba(0,0,0,0.90) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── CSS-only scale wrapper (GSAP never touches this) ── */
+.coin-size-wrap {
+  /* desktop: natural size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coin-ambient {
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(220,220,220,0.045) 0%,
+    transparent 68%
+  );
+  animation: ambientPulse 5s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes ambientPulse {
+  0%, 100% { transform: scale(1);   opacity: 0.8; }
+  50%       { transform: scale(1.08); opacity: 1;   }
+}
+
+.coin-scene {
+  perspective: 1100px;
+  perspective-origin: 50% 42%;
+  position: relative;
+  z-index: 1;
+}
+
+/* mouse tilt wrapper — owns rotateX/Y via direct style, never GSAP */
+.coin-tilt {
+  transform-style: preserve-3d;
+}
+
+/* GSAP owns ALL transforms on this element (float + scroll rotation).
+   NO CSS transform here — any CSS transform would fight GSAP's inline style. */
+.coin-3d {
+  width: 290px;
+  height: 290px;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+/* ── Faces ──────────────────────────────────────────── */
+.coin-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.coin-front {
+  background:
+    radial-gradient(circle at 36% 24%, rgba(255,255,255,0.98) 0%,  rgba(255,255,255,0)  10%),
+    radial-gradient(circle at 33% 27%, rgba(255,255,255,0.92) 0%,  rgba(255,255,255,0)  42%),
+    radial-gradient(circle at 72% 78%, rgba(0,0,0,0.32)       0%,  transparent           40%),
+    radial-gradient(circle at 50% 50%, #ffffff 0%, #dcdcdc 30%, #a8a8a8 58%, #707070 82%, #454545 100%);
+  box-shadow:
+    inset  0  3px 12px rgba(255,255,255,0.75),
+    inset  0 -3px 10px rgba(0,0,0,0.45),
+    0 0 110px rgba(220,220,220,0.14),
+    0 40px  90px rgba(0,0,0,0.65);
+}
+
+.coin-back {
+  transform: rotateY(180deg);
+  background:
+    radial-gradient(circle at 64% 26%, rgba(255,255,255,0.95) 0%,  rgba(255,255,255,0)  10%),
+    radial-gradient(circle at 67% 27%, rgba(255,255,255,0.88) 0%,  rgba(255,255,255,0)  40%),
+    radial-gradient(circle at 35% 76%, rgba(0,0,0,0.28)       0%,  transparent           38%),
+    radial-gradient(circle at 50% 50%, #f8f8f8 0%, #d4d4d4 30%, #a0a0a0 58%, #686868 82%, #404040 100%);
+  box-shadow:
+    inset  0  3px 12px rgba(255,255,255,0.68),
+    inset  0 -3px 10px rgba(0,0,0,0.4);
+}
+
+/* Moving specular light sweep */
+.coin-sheen {
+  position: absolute;
+  top: -40%;
+  left: -65%;
+  width: 55%;
+  height: 180%;
+  background: linear-gradient(
+    105deg,
+    transparent          16%,
+    rgba(255,255,255,0.48) 46%,
+    rgba(255,255,255,0.14) 55%,
+    transparent          74%
+  );
+  transform: skewX(-14deg);
+  animation: sheen 6s ease-in-out infinite;
+}
+
+.coin-sheen-back { animation-delay: -3s; }
+
+@keyframes sheen {
+  0%   { left: -65%; opacity: 0;   }
+  8%   {              opacity: 1;   }
+  65%  { left: 120%; opacity: 0.4; }
+  100% { left: 120%; opacity: 0;   }
+}
+
+/* Engraved rings */
+.coin-ring-outer {
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.16);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.24);
+  pointer-events: none;
+}
+
+.coin-ring-inner {
+  position: absolute;
+  inset: 23px;
+  border-radius: 50%;
+  border: 0.75px solid rgba(255,255,255,0.26);
+  pointer-events: none;
+}
+
+/* Face content */
+.coin-face-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+/* Engraved emblem (front face) — same three-node network mark as the
+   site logo, struck into the coin instead of printed on it. The dual
+   drop-shadow reproduces the old .coin-v treatment (light top-left,
+   dark bottom-right) so it reads as pressed metal, not flat ink. */
+.coin-emblem {
+  width: 124px;
+  height: 124px;
+  overflow: visible;
+}
+.coin-emblem-shape {
+  filter:
+    drop-shadow(1.5px 1.5px 0 rgba(255,255,255,0.62))
+    drop-shadow(-1.5px -1.5px 0 rgba(0,0,0,0.14));
+}
+.coin-emblem-person circle,
+.coin-emblem-person path {
+  fill: rgba(38,38,38,0.48);
+}
+
+.coin-ring-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Back face text */
+.coin-back-content { gap: 0.1rem; }
+
+.coin-b2b {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 3.8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgba(40,40,40,0.52);
+  text-shadow:  1px 1px 0 rgba(255,255,255,0.55), -1px -1px 0 rgba(0,0,0,0.12);
+}
+
+.coin-data-lbl {
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  color: rgba(50,50,50,0.42);
+  margin-top: 0.25em;
+}
+
+.coin-india-lbl {
+  font-family: "Inter", sans-serif;
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  color: rgba(60,60,60,0.35);
+  margin-top: 0.2em;
+}
+
+/* Coin edge (translateZ layers) */
+.coin-edge {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transform: translateZ(-7px);
+  background: linear-gradient(135deg, #eeeeee, #808080, #eeeeee);
+  box-shadow:
+    0 0 0 5px #b4b4b4,
+    0 0 0 7px #909090,
+    0 0 0 9px #707070;
+}
+
+/* Dark liquid reflection below coin */
+.coin-reflection {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 6px);
+  transform: translateX(-50%) scaleY(-1);
+  width: 290px;
+  height: 145px;
+  border-radius: 50% 50% 0 0;
+  background:
+    radial-gradient(circle at 33% 27%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 40%),
+    radial-gradient(circle at 50% 50%, #d8d8d8 0%, #a8a8a8 40%, #707070 70%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, transparent 100%);
+  filter: blur(4px);
+  overflow: hidden;
+}
+
+/* Floating dust particles */
+.coin-particles {
+  position: absolute;
+  inset: 0;
+  list-style: none;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.75);
+  animation: particleDrift ease-in-out infinite;
+}
+
+@keyframes particleDrift {
+  0%,100% { transform: translateY(0)    scale(1);   }
+  50%      { transform: translateY(-32px) scale(1.3); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCROLL REVEALS
+══════════════════════════════════════════════════════════ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.75s cubic-bezier(0.22,1,0.36,1),
+              transform 0.75s cubic-bezier(0.22,1,0.36,1);
+  will-change: opacity, transform;
+}
+.reveal--visible { opacity: 1; transform: translateY(0); }
+
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1),
+              transform 0.65s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal-stagger--visible > * { opacity: 1; transform: translateY(0); }
+
+.reveal-stagger-top > * {
+  opacity: 0;
+  transform: translateY(-22px);
+  transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1),
+              transform 0.65s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal-stagger-top--visible > * { opacity: 1; transform: translateY(0); }
+
+.reveal-stagger--visible > *:nth-child(1),
+.reveal-stagger-top--visible > *:nth-child(1) { transition-delay:   0ms; }
+.reveal-stagger--visible > *:nth-child(2),
+.reveal-stagger-top--visible > *:nth-child(2) { transition-delay: 100ms; }
+.reveal-stagger--visible > *:nth-child(3),
+.reveal-stagger-top--visible > *:nth-child(3) { transition-delay: 200ms; }
+.reveal-stagger--visible > *:nth-child(4),
+.reveal-stagger-top--visible > *:nth-child(4) { transition-delay: 300ms; }
+.reveal-stagger--visible > *:nth-child(5),
+.reveal-stagger-top--visible > *:nth-child(5) { transition-delay: 400ms; }
+.reveal-stagger--visible > *:nth-child(6),
+.reveal-stagger-top--visible > *:nth-child(6) { transition-delay: 500ms; }
+.reveal-stagger--visible > *:nth-child(7),
+.reveal-stagger-top--visible > *:nth-child(7) { transition-delay: 600ms; }
+.reveal-stagger--visible > *:nth-child(8),
+.reveal-stagger-top--visible > *:nth-child(8) { transition-delay: 700ms; }
+.reveal-stagger--visible > *:nth-child(9),
+.reveal-stagger-top--visible > *:nth-child(9) { transition-delay: 800ms; }
+
+/* SVG draw-on-scroll */
+.draw-icon { display: block; flex-shrink: 0; }
+.draw-icon svg { width: 100%; height: 100%; display: block; }
+.draw-icon svg path, .draw-icon svg line, .draw-icon svg polyline,
+.draw-icon svg rect, .draw-icon svg circle, .draw-icon svg ellipse,
+.draw-icon svg polygon {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  transition: stroke-dashoffset 1.1s cubic-bezier(0.22,1,0.36,1);
+}
+.draw-icon--visible svg path, .draw-icon--visible svg line,
+.draw-icon--visible svg polyline, .draw-icon--visible svg rect,
+.draw-icon--visible svg circle, .draw-icon--visible svg ellipse,
+.draw-icon--visible svg polygon { stroke-dashoffset: 0; }
+
+/* Hero line-by-line */
+.line-wrap  { display: block; overflow: hidden; padding-bottom: 0.05em; }
+.line-inner { display: block; transform: translateY(108%); opacity: 0; }
+.line-1 .line-inner { animation: lineUp 0.95s cubic-bezier(0.22,1,0.36,1) 0.5s  forwards; }
+.line-2 .line-inner { animation: lineUp 0.95s cubic-bezier(0.22,1,0.36,1) 0.68s forwards; }
+.line-3 .line-inner { animation: lineUp 0.95s cubic-bezier(0.22,1,0.36,1) 0.86s forwards; }
+@keyframes lineUp { to { transform: translateY(0); opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-stagger > *, .reveal-stagger-top > *
+  { opacity:1; transform:none; transition:none; }
+  .draw-icon svg path, .draw-icon svg line, .draw-icon svg polyline,
+  .draw-icon svg rect, .draw-icon svg circle, .draw-icon svg ellipse,
+  .draw-icon svg polygon { stroke-dasharray:none; stroke-dashoffset:0; transition:none; }
+  .line-inner { transform:none !important; opacity:1 !important; animation:none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   COIN POSITIONER (horizontal slide target)
+══════════════════════════════════════════════════════════ */
+
+.coin-positioner {
+  position: relative;
+  z-index: 1;
+  /* Matches the JS default (hero's resting position, right half of the
+     70/30 content/void split) so the coin is already in the correct spot
+     on first paint — before JS has hydrated and the positioning effect
+     has run — instead of flashing centred and then jumping right. JS
+     takes over from this exact value, so there's no visible handoff.
+     offset = min(vw, content-max) * 0.35 — 35vw below the 1400px cap,
+     a fixed 490px (1400 * 0.35) above it.
+     translateY(-90vh) is the intro drop's starting point — well above
+     the viewport regardless of its height — so the coin is already
+     off-screen-above on first paint; the mount-time GSAP tween in
+     CoinFixed then eases it down to its resting y:0, reading its "from"
+     straight off this computed transform, same handoff trick as the x
+     offset above. */
+  transform: translateX(35vw) translateY(-90vh);
+  will-change: transform;
+}
+
+@media (min-width: 1400px) {
+  .coin-positioner { transform: translateX(490px) translateY(-90vh); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   SPLIT LAYOUT — alternating coin-left / coin-right
+   .panel-l = content LEFT,  void RIGHT (coin appears right)
+   .panel-r = void LEFT,     content RIGHT (coin appears left)
+══════════════════════════════════════════════════════════ */
+
+/* Hero split — content 70% / coin void 30%, capped at --content-max
+   and centred so it never drags full-width on ultra-wide screens. */
+.hero-split {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  transform: translateZ(0); /* GPU layer — seals bottom edge against ticker */
+}
+
+.hero-panel {
+  /* min-width:0 — grid items default to min-width:auto, which refuses to
+     shrink below the content's intrinsic min-content width. Without this,
+     any wide, unbreakable descendant forces this whole grid track (and
+     the page) wider than the viewport instead of wrapping/scrolling
+     inside itself. */
+  min-width: 0;
+  background: rgba(0,0,0,0.80);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-right: 1px solid var(--glass-b);
+  padding: 8rem var(--gutter) 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  pointer-events: all;
+}
+
+.hero-void {
+  /* transparent — fixed coin shows through */
+  min-width: 0;
+  min-height: 100vh;
+  pointer-events: none;
+}
+
+/* ─── Generic split section ───────────────────────────────────
+   Gap seal: translateZ(0) forces GPU compositing so sub-pixel
+   rendering never leaves a transparent hairline between sections.
+   The negative margin pulls each section 1px over the previous
+   section's bottom border — closing any rendering gap.
+──────────────────────────────────────────────────────────────── */
+.split-sec {
+  position: relative;
+  z-index: 10;
+  max-width: var(--content-max);
+  transform: translateZ(0);      /* GPU layer — eliminates sub-pixel gaps */
+  margin: -1px auto 0;           /* overlap previous section's bottom edge, centred */
+}
+
+/* Ticker also needs the gap seal */
+.ticker {
+  /* max-width: var(--content-max); */
+  /* margin: -1px auto 0; */
+  transform: translateZ(0);
+}
+
+/* Split header row — content 70% / coin void 30% */
+.split-head {
+  display: grid;
+  min-height: 58vh;
+  align-items: stretch; /* stretch so panel fills full height */
+}
+
+/* panel LEFT (70%), void RIGHT (30%) → coin on right */
+.split-head.panel-l { grid-template-columns: 7fr 3fr; }
+.panel-l .split-panel { border-right: 1px solid var(--glass-b); order: 1; }
+.panel-l .split-void  { order: 2; }
+
+/* void LEFT (30%), panel RIGHT (70%) → coin on left */
+.split-head.panel-r { grid-template-columns: 3fr 7fr; }
+.panel-r .split-void  { order: 1; }
+.panel-r .split-panel { border-left: 1px solid var(--glass-b); order: 2; }
+
+/* Content panel */
+.split-panel {
+  /* min-width:0 — same fix as .hero-panel: grid items default to
+     min-width:auto, so a wide unbreakable descendant (e.g. the 540px
+     sample table, or any fixed-width child) would otherwise force this
+     whole grid track — and the page — wider than the viewport instead
+     of scrolling/wrapping inside itself. */
+  min-width: 0;
+  background: rgba(0,0,0,0.84);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  padding: 5.5rem var(--gutter);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-top: 1px solid var(--glass-b);
+}
+
+/* void half — transparent so fixed coin shows through */
+.split-void { min-width: 0; min-height: 58vh; }
+
+/* Extra content block (card grid / table) stacked below the header —
+   confined to the same column as the header via .split-grid below. */
+.split-cards {
+  min-width: 0;
+  background: rgba(0,0,0,0.80);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 2.5rem var(--gutter) 5rem;
+  border-top: 1px solid var(--glass-b);
+}
+
+/* ─── Split section variant: header + extra content share ONE column ───
+   Used when a section has extra content (card grid, table) that must
+   continue in the same left/right column as the header text instead of
+   spanning the full section width. The void column spans both rows so
+   the fixed coin stays visible beside the content for the whole section.
+   Same 70/30 content/void split as .split-head above. */
+.split-grid {
+  display: grid;
+}
+
+.split-grid.panel-l {
+  grid-template-columns: 7fr 3fr;
+  grid-template-areas:
+    "panel void"
+    "cards void";
+}
+.split-grid.panel-r {
+  grid-template-columns: 3fr 7fr;
+  grid-template-areas:
+    "void panel"
+    "void cards";
+}
+
+.split-grid .split-panel { grid-area: panel; }
+
+/* Shorter than .split-head's 58vh, and bottom-anchored (not centred) —
+   the header sits right above the cards grid that continues below it in
+   the same column, instead of floating in the middle of a tall box with
+   a big dead gap before the grid starts. Desktop only (higher specificity
+   than .split-panel's mobile padding override would otherwise leak a 2rem
+   bottom padding into the mobile/tablet layout regardless of breakpoint). */
+@media (min-width: 901px) {
+  .split-grid .split-panel {
+    min-height: 44vh;
+    justify-content: flex-end;
+    padding-bottom: 2rem;
+  }
+}
+.split-grid .split-void  { grid-area: void; }
+.split-grid .split-cards { grid-area: cards; }
+
+.split-grid.panel-l .split-cards { border-right: 1px solid var(--glass-b); }
+.split-grid.panel-r .split-cards { border-left: 1px solid var(--glass-b); }
+
+/* ══════════════════════════════════════════════════════════
+   NAV
+══════════════════════════════════════════════════════════ */
+
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  background: rgba(0,0,0,0.62);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border-bottom: 1px solid var(--glass-b);
+}
+
+.nav-inner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display:flex; align-items:center; gap:0.7rem; text-decoration:none;
+}
+
+/* Abstract chrome network mark — three connected nodes, same metallic
+   gradient language as the hero coin. Hover reads as a small pulse of
+   energy through the network rather than a spin. */
+.logo-mark {
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.45));
+  transition: transform 0.25s cubic-bezier(0.22,1,0.36,1);
+}
+.logo:hover .logo-mark { transform: scale(1.1); }
+.logo:hover .logo-text { color: rgba(255,255,255,0.85); }
+
+.logo-word { display:flex; flex-direction:column; }
+
+.logo-text {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.2rem; font-weight: 700;
+  letter-spacing: -0.015em; color: var(--white); line-height: 1;
+}
+.logo-sub {
+  font-size: 0.56rem; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--gray-dim); font-family: "Inter", sans-serif; margin-top: 3px;
+}
+
+.nav-links { display:flex; gap:2rem; list-style:none; }
+.nav-links a {
+  font-size: var(--text-sm); letter-spacing: 0.06em;
+  color: var(--gray); text-decoration: none;
+  text-transform: uppercase; font-weight:500;
+  font-family: "Inter", sans-serif; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--white); }
+
+.nav-cta {
+  background: transparent; color: var(--white);
+  border: 1px solid var(--glass-b); cursor: pointer;
+  font-family: "Inter", sans-serif; font-size: var(--text-sm);
+  font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.5rem 1.4rem;
+  transition: background 0.22s, border-color 0.22s;
+}
+.nav-cta:hover { background: var(--glass-hover); border-color: rgba(255,255,255,0.22); }
+/* hide the nav-cta on mobile and tablet */
+@media (max-width: 900px) {
+  .nav-cta { display: none; }
+}
+
+/* Hamburger — hidden on desktop, shown at the tablet/mobile breakpoint
+   in place of .nav-links. Three bars morph into an X when open. */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  margin-left: 0.75rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.nav-hamburger span {
+  display: block;
+  width: 22px;
+  height: 1.5px;
+  background: var(--white);
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), opacity 0.2s;
+}
+.nav-hamburger.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-hamburger.is-open span:nth-child(2) { opacity: 0; }
+.nav-hamburger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* Dropdown panel with the links .nav-links hides at this breakpoint.
+   max-height transition (not display) so it can animate open/closed. */
+.nav-mobile-menu {
+  display: none;
+  max-height: 0;
+  overflow: hidden;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border-top: 1px solid transparent;
+  transition: max-height 0.35s cubic-bezier(0.22,1,0.36,1), border-color 0.35s;
+}
+.nav-mobile-menu.is-open {
+  max-height: 320px;
+  border-top-color: var(--glass-b);
+}
+.nav-mobile-menu ul { list-style: none; }
+.nav-mobile-menu li { border-bottom: 1px solid var(--glass-b); }
+.nav-mobile-menu li:last-child { border-bottom: none; }
+.nav-mobile-menu a {
+  display: block;
+  padding: 0.95rem var(--gutter);
+  font-size: var(--text-sm); letter-spacing: 0.06em;
+  color: var(--gray); text-decoration: none;
+  text-transform: uppercase; font-weight: 500;
+  font-family: "Inter", sans-serif; transition: color 0.2s;
+}
+.nav-mobile-menu a:hover, .nav-mobile-menu a:active { color: var(--white); }
+
+/* ══════════════════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════════════════ */
+
+.hero {
+  position: relative; z-index: 10;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end;
+  padding: 0 2.5rem 9vh;
+  text-align: center;
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  border: 1px solid var(--glass-b);
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(12px);
+  padding: 0.42rem 1rem;
+  font-size: 0.68rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--gray);
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.3s forwards;
+}
+.badge-dot {
+  width:5px; height:5px; border-radius:50%;
+  background: var(--white); flex-shrink:0;
+  animation: blink 2.5s infinite 1.2s;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+
+.hero-h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: clamp(3.4rem, 7.5vw, 7.8rem);
+  line-height: 0.94; letter-spacing: -0.035em;
+  color: var(--white); margin-bottom: 1.8rem;
+}
+
+.hero-sub {
+  font-size: var(--text-lg); line-height: 1.72;
+  color: var(--gray-dim); max-width: 460px;
+  /* Left-aligned, matching the heading above it — no auto-centring. */
+  margin: 0 0 2.4rem;
+  opacity:0; animation: fadeUp 0.8s cubic-bezier(0.22,1,0.36,1) 1s forwards;
+}
+
+.hero-actions {
+  display: flex; gap: 1rem; flex-wrap: wrap;
+  align-items: center; justify-content: flex-start;
+  pointer-events: all;
+  opacity:0; animation: fadeUp 0.8s cubic-bezier(0.22,1,0.36,1) 1.15s forwards;
+}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn-primary {
+  background: var(--white); color: var(--black);
+  border: none; cursor: pointer;
+  font-family: "Inter", sans-serif; font-size: var(--text-sm);
+  font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.9rem 2.2rem;
+  transition: opacity 0.22s, transform 0.22s;
+}
+.btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.btn-ghost {
+  background: transparent; color: var(--gray);
+  border: 1px solid var(--glass-b); cursor: pointer;
+  font-family: "Inter", sans-serif; font-size: var(--text-sm);
+  font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.9rem 2rem;
+  transition: color 0.22s, border-color 0.22s, background 0.22s;
+  backdrop-filter: blur(8px);
+}
+.btn-ghost:hover { color:var(--white); border-color:rgba(255,255,255,0.25); background:var(--glass); }
+
+/* ══════════════════════════════════════════════════════════
+   TICKER
+══════════════════════════════════════════════════════════ */
+
+/* Ticker is NOT a split section — its height is too short for the
+   left/right coin-void layout (caused flicker); it stays a plain
+   full-width marquee bar, unlike every other section. */
+.ticker {
+  position: relative; z-index: 10;
+  overflow: hidden;
+  border-top: 1px solid var(--glass-b);
+  border-bottom: 1px solid var(--glass-b);
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 0.88rem var(--gutter);
+}
+.ticker-track {
+  display:flex; gap:3rem; width:max-content;
+  animation: roll 32s linear infinite;
+}
+@keyframes roll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.tick-item {
+  font-size: 0.7rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--gray-dim);
+  white-space: nowrap; display:flex; align-items:center; gap:0.9rem;
+  font-family: "Inter", sans-serif; font-weight:500;
+}
+.tick-item::before { content:"◆"; font-size:0.3rem; color:rgba(255,255,255,0.18); }
+
+/* ══════════════════════════════════════════════════════════
+   SECTIONS (glass over coin)
+══════════════════════════════════════════════════════════ */
+
+.sec {
+  position: relative; z-index: 10;
+  padding: 7rem 2.5rem;
+  border-bottom: 1px solid var(--glass-b);
+  background: rgba(0,0,0,0.74);
+  backdrop-filter: blur(22px);
+}
+
+.sec-eyebrow {
+  font-family: "Inter", sans-serif;
+  font-size: 0.68rem; font-weight:500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gray-dim); margin-bottom: 1.2rem;
+  display:flex; align-items:center; gap:0.75rem;
+}
+.sec-eyebrow::before {
+  content:""; width:24px; height:1px;
+  background: var(--glass-b); flex-shrink:0;
+}
+
+.sec-h {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700; font-size: clamp(2.2rem,4vw,4rem);
+  letter-spacing: -0.022em; line-height:1.02;
+  margin-bottom: 1.2rem; color: var(--white);
+}
+
+.sec-p {
+  font-size: var(--text-lg); line-height:1.75;
+  color: var(--gray-dim); max-width: 520px;
+}
+/* Modifier for the rare case where something else continues in the same
+   panel below it (e.g. Early Access' form card) — everywhere else .sec-p
+   is the panel's last element, so .split-cards' own padding-top (or
+   nothing, if there's no cards block) already handles the transition. */
+.sec-p--gap { margin-bottom: 2rem; }
+
+/* ── Category cards ──────────────────────────────────── */
+/* No margin-top here — .split-cards' own padding-top already gives this
+   the same gap every "cards" block gets; adding one here on top of that
+   was double-stacking (3.5rem + 4rem) and made this section noticeably
+   taller than the others. */
+.cat-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background: var(--glass-b);
+  border: 1px solid var(--glass-b);
+}
+.cat-card {
+  background: rgba(0,0,0,0.5);
+  padding: 2.4rem 2rem; cursor:default;
+  position:relative; overflow:hidden;
+  transition: background 0.3s;
+}
+.cat-card::before {
+  content:""; position:absolute; inset:0;
+  background: var(--glass-hover); opacity:0;
+  transition: opacity 0.3s;
+}
+.cat-card:hover::before { opacity:1; }
+.cat-card:hover .cat-name { color:var(--white); }
+.cat-card:hover .draw-icon { color:var(--white); }
+
+.cat-num {
+  font-family:"Space Grotesk",sans-serif; font-size:1.8rem;
+  font-weight:700; color:rgba(255,255,255,0.055);
+  line-height:1; margin-bottom:1.2rem;
+}
+.cat-card .draw-icon {
+  color:var(--gray-dim); margin-bottom:1.2rem;
+  transition:color 0.3s; position:relative;
+}
+.cat-name {
+  font-family:"Space Grotesk",sans-serif; font-weight:600;
+  font-size:1.1rem; letter-spacing:-0.01em;
+  margin-bottom:0.6rem; color:rgba(255,255,255,0.88);
+  transition:color 0.3s; position:relative;
+}
+.cat-desc { font-size:var(--text-sm); line-height:1.65; color:var(--gray-dim); position:relative; }
+
+/* ── Steps ───────────────────────────────────────────── */
+/* Same rationale as .cat-grid — no margin-top, .split-cards already
+   provides the gap. */
+.steps {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--glass-b); border:1px solid var(--glass-b);
+}
+.step {
+  background:rgba(0,0,0,0.5); padding:2.4rem 1.8rem;
+  position:relative; overflow:hidden; transition:background 0.3s;
+}
+.step::before {
+  content:""; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.14),transparent);
+  transform:scaleX(0);
+  transition:transform 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+.step:hover::before { transform:scaleX(1); }
+.step:hover { background:rgba(255,255,255,0.04); }
+.step:hover h3 { color:var(--white); }
+.step:hover .draw-icon { color:var(--white); }
+
+.step .draw-icon { color:var(--gray-dim); margin-bottom:1.2rem; transition:color 0.3s; }
+.step-n {
+  font-family:"Inter",sans-serif; font-size:0.6rem; font-weight:500;
+  color:rgba(168,168,168,0.38); letter-spacing:0.22em;
+  text-transform:uppercase; margin-bottom:0.7rem;
+}
+.step h3 {
+  font-family:"Space Grotesk",sans-serif; font-weight:600;
+  font-size:1.05rem; letter-spacing:-0.01em;
+  margin-bottom:0.55rem; color:rgba(255,255,255,0.88); transition:color 0.3s;
+}
+.step p { font-size:var(--text-sm); line-height:1.65; color:var(--gray-dim); }
+
+/* ── Format section ─────────────────────────────────── */
+.format-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:3rem; align-items:start; margin-top:4rem;
+}
+.format-grid > * { min-width:0; }
+
+.format-info {
+  display:flex; flex-direction:column;
+  gap:1px; background:var(--glass-b); border:1px solid var(--glass-b);
+}
+.fi-item {
+  background:rgba(0,0,0,0.5); padding:1.8rem;
+  display:flex; gap:1.4rem; align-items:flex-start;
+  transition:background 0.25s; position:relative; overflow:hidden;
+}
+.fi-item::after {
+  content:""; position:absolute; left:0; top:0; bottom:0; width:1px;
+  background:var(--white); transform:scaleY(0);
+  transform-origin:top; transition:transform 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+.fi-item:hover::after { transform:scaleY(1); }
+.fi-item:hover { background:var(--glass); }
+.fi-item .draw-icon { color:var(--gray-dim); flex-shrink:0; margin-top:2px; transition:color 0.25s; }
+.fi-item:hover .draw-icon { color:var(--white); }
+.fi-body { flex:1; min-width:0; }
+.fi-title {
+  font-family:"Space Grotesk",sans-serif; font-weight:600;
+  font-size:1rem; letter-spacing:-0.01em;
+  margin-bottom:0.4rem; color:rgba(255,255,255,0.9);
+}
+.fi-desc { font-size:var(--text-sm); line-height:1.65; color:var(--gray-dim); }
+
+/* ── Sample table ───────────────────────────────────── */
+.sample-table {
+  border:1px solid var(--glass-b); font-size:var(--text-sm);
+  overflow:hidden; min-width:540px;
+  background:rgba(0,0,0,0.6); backdrop-filter:blur(12px);
+}
+.st-head {
+  background:var(--glass); border-bottom:1px solid var(--glass-b);
+  color:var(--gray-dim); display:grid;
+  grid-template-columns:2fr 1.5fr 1.2fr 1.5fr 1fr;
+  gap:0.5rem; padding:0.75rem 1rem;
+  font-size:0.65rem; letter-spacing:0.12em;
+  text-transform:uppercase; font-weight:500; font-family:"Inter",sans-serif;
+}
+.st-row {
+  display:grid; grid-template-columns:2fr 1.5fr 1.2fr 1.5fr 1fr;
+  gap:0.5rem; padding:0.65rem 1rem;
+  border-bottom:1px solid var(--glass-b);
+  transition:background 0.18s; color:rgba(255,255,255,0.75);
+  font-family:"Inter",sans-serif;
+}
+.st-row:last-child { border-bottom:none; }
+.st-row:hover { background:var(--glass); }
+.st-tag {
+  font-size:0.58rem; border:1px solid var(--glass-b);
+  padding:0.15rem 0.4rem; letter-spacing:0.08em;
+  text-transform:uppercase; display:inline-block;
+  color:var(--gray-dim); font-family:"Inter",sans-serif;
+}
+
+/* ── Pricing ─────────────────────────────────────────── */
+/* Same rationale as .cat-grid — no margin-top, .split-cards already
+   provides the gap. */
+.price-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--glass-b); border:1px solid var(--glass-b);
+}
+.pc {
+  background:rgba(0,0,0,0.5); padding:2.4rem 2rem;
+  transition:background 0.25s; position:relative; overflow:hidden;
+}
+.pc:hover { background:var(--glass); }
+.pc.hi { background:rgba(255,255,255,0.055); }
+.pc.hi::before {
+  content:""; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);
+}
+.pc.hi:hover { background:rgba(255,255,255,0.085); }
+
+.pc-tier {
+  font-family:"Inter",sans-serif; font-size:0.58rem;
+  letter-spacing:0.22em; text-transform:uppercase;
+  color:var(--gray-dim); margin-bottom:1.8rem;
+}
+.pc-note {
+  display:inline-block; font-family:"Inter",sans-serif;
+  font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase;
+  border:1px dashed var(--glass-b); padding:0.25rem 0.65rem;
+  color:var(--gray-dim); margin-bottom:1rem;
+}
+.pc.hi .pc-note { border-color:rgba(255,255,255,0.2); color:rgba(255,255,255,0.55); }
+.pc-amt {
+  font-family:"Space Grotesk",sans-serif; font-weight:700;
+  font-size:3.8rem; line-height:1; margin-bottom:0.3rem; color:var(--white);
+}
+.pc-period { font-family:"Inter",sans-serif; font-size:0.72rem; color:var(--gray-dim); margin-bottom:2rem; }
+.pc-list {
+  list-style:none; display:flex; flex-direction:column;
+  gap:0.75rem; margin-bottom:2.2rem;
+}
+.pc-list li {
+  font-family:"Inter",sans-serif; font-size:var(--text-sm);
+  display:flex; gap:0.7rem; align-items:flex-start;
+  color:var(--gray-dim); line-height:1.55;
+}
+.pc-list li::before { content:"–"; flex-shrink:0; color:rgba(255,255,255,0.22); }
+.pc-btn {
+  width:100%; padding:0.88rem;
+  font-family:"Inter",sans-serif; font-size:var(--text-sm);
+  font-weight:500; letter-spacing:0.06em; text-transform:uppercase;
+  cursor:pointer; transition:background 0.22s,color 0.22s,border-color 0.22s;
+  background:transparent; color:var(--gray); border:1px solid var(--glass-b);
+}
+.pc-btn:hover { background:var(--white); color:var(--black); border-color:var(--white); }
+.pc.hi .pc-btn { background:var(--white); color:var(--black); border-color:var(--white); font-weight:600; }
+.pc.hi .pc-btn:hover { opacity:0.88; }
+.pop-label {
+  float:right; font-family:"Inter",sans-serif; font-size:0.54rem;
+  letter-spacing:0.1em; text-transform:uppercase;
+  border:1px solid var(--glass-b); padding:0.18rem 0.45rem;
+  color:var(--gray-dim); margin-top:2px;
+}
+
+/* ── FAQ ─────────────────────────────────────────────── */
+.faq-wrap { margin-top:2rem; }
+.fq { border-bottom:1px solid var(--glass-b); }
+.fq-q {
+  width:100%; background:none; border:none;
+  color:rgba(255,255,255,0.85);
+  font-family:"Space Grotesk",sans-serif; font-weight:500;
+  font-size:1.05rem; letter-spacing:-0.01em; text-align:left;
+  padding:1.4rem 0; cursor:pointer;
+  display:flex; justify-content:space-between;
+  align-items:center; gap:1rem; transition:color 0.2s;
+}
+.fq-q:hover { color:var(--white); }
+.fq-ico { font-size:1rem; color:var(--gray-dim); flex-shrink:0; transition:transform 0.3s; }
+.fq.open .fq-ico { transform:rotate(45deg); }
+.fq-a {
+  font-family:"Inter",sans-serif; font-size:var(--text-sm);
+  line-height:1.75; color:var(--gray-dim);
+  max-height:0; overflow:hidden;
+  transition:max-height 0.45s ease,padding-bottom 0.3s;
+}
+.fq.open .fq-a { max-height:220px; padding-bottom:1.4rem; }
+
+/* ── Contact ─────────────────────────────────────────── */
+.contact-header {
+  text-align:center; max-width:520px; margin:0 auto 2.5rem;
+}
+.contact-header .sec-eyebrow { justify-content:center; }
+.contact-header .sec-eyebrow::before { display:none; }
+.contact-header .sec-p { margin-left:auto; margin-right:auto; }
+.contact-intro { margin-bottom:0; }
+
+.contact-form-card {
+  /* Left-aligned, matching the heading/paragraph above it in the same
+     panel — no auto-centring the card itself. */
+  max-width:500px; padding:2.2rem;
+  border:1px solid var(--glass-b);
+  background:var(--glass); backdrop-filter:blur(20px); text-align:left;
+}
+.contact-label {
+  display:block; font-family:"Inter",sans-serif; font-weight:500;
+  font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--gray); margin-bottom:0.55rem;
+}
+.contact-label + .contact-input { margin-bottom:1.4rem; }
+.contact-optional { font-weight:400; text-transform:none; letter-spacing:0; color:var(--gray-dim); font-size:var(--text-sm); }
+.contact-input {
+  width:100%; border:1px solid var(--glass-b);
+  background:rgba(255,255,255,0.03); color:var(--white);
+  font-family:"Inter",sans-serif; font-size:var(--text-base);
+  padding:0.9rem 1rem; outline:none;
+  transition:border-color 0.2s,background 0.2s;
+}
+.contact-input::placeholder { color:rgba(168,168,168,0.35); }
+.contact-input:focus { border-color:rgba(255,255,255,0.3); background:rgba(255,255,255,0.05); }
+.contact-actions { margin-top:0.35rem; }
+.contact-actions .btn-primary:disabled { opacity:0.3; cursor:not-allowed; transform:none; }
+.contact-note { margin-top:1.2rem; font-size:var(--text-sm); color:var(--gray-dim); }
+
+/* ── Footer ──────────────────────────────────────────── */
+footer.site-footer {
+  position:relative; z-index:10;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 2.5rem var(--gutter) 2rem;
+  background:rgba(0,0,0,0.88); backdrop-filter:blur(20px);
+  border-top:1px solid var(--glass-b);
+}
+.foot-wrap {
+  display:flex; justify-content:space-between; align-items:center;
+  border-bottom:1px solid var(--glass-b);
+  padding-bottom:2rem; margin-bottom:1.5rem; flex-wrap:wrap; gap:1.5rem;
+}
+.foot-brand .logo-text { font-size:1.1rem; }
+.foot-brand p { font-family:"Inter",sans-serif; font-size:var(--text-sm); color:var(--gray-dim); margin-top:0.35rem; line-height:1.6; }
+.foot-links { display:flex; gap:1.8rem; flex-wrap:wrap; }
+.foot-links a { font-family:"Inter",sans-serif; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--gray-dim); text-decoration:none; transition:color 0.2s; }
+.foot-links a:hover { color:var(--white); }
+.foot-desc { max-width: max-content; }
+
+/* Huge wordmark — dim base layer + a cursor-tracked chrome highlight
+   layer on top, revealed via background-clip:text. */
+.foot-mark-wrap {
+  position: relative;
+  margin: 1rem 0 2.5rem;
+  cursor: default;
+  overflow: hidden;
+}
+.foot-mark {
+  /* inline-block, NOT block — it must shrink-wrap its own text so
+     scrollWidth reports the word's true intrinsic width. A block span
+     stretches to the wrapper's width by default, which made scrollWidth
+     just echo the container back (ratio ≈ 1, no scale-up ever applied). */
+  display: inline-block;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  /* --fs is measured/set by FooterMark.tsx so the word's rendered width
+     exactly fills the container edge-to-edge; the clamp() is only the
+     pre-JS fallback so nothing flashes oversized before that runs. */
+  font-size: var(--fs, clamp(2.6rem, 11vw, 9.5rem));
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+  white-space: nowrap;
+  user-select: none;
+}
+.foot-mark-base { color: rgba(255,255,255,0.055); }
+.foot-mark-glow {
+  position: absolute;
+  inset: 0;
+  color: transparent;
+  background-image: radial-gradient(
+    circle 260px at var(--mx, 50%) var(--my, 50%),
+    #ffffff 0%,
+    rgba(224,224,224,0.7) 32%,
+    rgba(180,180,180,0.18) 55%,
+    transparent 76%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.foot-mark-wrap:hover .foot-mark-glow { opacity: 1; }
+
+.foot-bot { display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; }
+.foot-copy,.foot-right { font-family:"Inter",sans-serif; font-size:0.6rem; color:rgba(255,255,255,0.18); letter-spacing:0.06em; }
+
+/* ── Misc ────────────────────────────────────────────── */
+.muted-cell { color:var(--gray-dim); }
+.sample-preview-note { font-size:var(--text-sm); color:var(--gray-dim); margin-top:0.75rem; }
+.sample-table-section { width:100%; min-width:0; }
+.sample-table-wrap { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+/* ── Legal pages (Privacy Policy, etc.) ────────────────── */
+.legal-page {
+  position: relative; z-index: 10;
+  min-height: 100vh;
+  background: var(--black);
+  padding: 8rem 0 6rem;
+}
+.legal-wrap {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+.legal-h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700; font-size: clamp(2.4rem, 5vw, 4rem);
+  letter-spacing: -0.022em; line-height: 1.05;
+  margin: 1rem 0 0.6rem; color: var(--white);
+}
+.legal-updated { font-size: var(--text-sm); color: var(--gray-dim); margin-bottom: 2.5rem; }
+.legal-h2 {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 600; font-size: 1.3rem;
+  letter-spacing: -0.012em; color: var(--white);
+  margin: 2.4rem 0 0.9rem;
+}
+.legal-p { font-size: var(--text-base); line-height: 1.75; color: var(--gray-dim); max-width: 720px; }
+.legal-p + .legal-p { margin-top: 1rem; }
+.legal-list {
+  list-style: none; max-width: 720px;
+  display: flex; flex-direction: column; gap: 0.7rem;
+  margin: 0.5rem 0 1rem;
+}
+.legal-list li {
+  font-size: var(--text-base); line-height: 1.7; color: var(--gray-dim);
+  padding-left: 1.2rem; position: relative;
+}
+.legal-list li::before { content:"–"; position:absolute; left:0; color: rgba(255,255,255,0.25); }
+.legal-p strong, .legal-list li strong { color: var(--white); font-weight: 600; }
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════
+   TABLET  (≤ 900px)
+   Coin: centred, scaled 0.62×, positioned at top of viewport,
+   visible only in the hero — sections stack tightly right below it
+   with no reserved gap, and simply cover the (still-fixed) coin with
+   their own opaque backgrounds once scrolled past.
+══════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+
+  .legal-page { padding: 6rem 0 4rem; }
+
+  /* Shift coin to top of screen so it appears above content — cleared
+     below the fixed 64px navbar (+ a breathing-room gap) so the coin
+     never renders under/behind it. */
+  .coin-fixed-wrap {
+    align-items: flex-start;
+    padding-top: calc(64px + 24px + 6vh);
+  }
+
+  /* Mobile/tablet: coin stays horizontally centred, matching the JS
+     default (x: 0) — but keeps the -90vh y offset so the mount-time
+     intro tween still has an off-screen "from" to drop in from. */
+  .coin-positioner { transform: translateY(-90vh); }
+
+  /* Scale coin to 62% — comfortable for tablet */
+  .coin-size-wrap {
+    transform: scale(0.62);
+    transform-origin: center top;
+  }
+
+  /* Adjust vignette centre to match coin's new vertical position */
+  .coin-fixed-wrap::after {
+    background: radial-gradient(
+      ellipse at 50% calc(20% + 88px),  /* tracks the navbar-cleared coin */
+      transparent 22%,
+      rgba(0,0,0,0.55) 52%,
+      rgba(0,0,0,0.88) 100%
+    );
+  }
+
+  /* ── Hero: coin visible at top, content below ── */
+  .hero-split {
+    grid-template-columns: 1fr;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero-void { display: none; }
+
+  .hero-panel {
+    border-right: none;
+    /* Remove blur — it would smear through the transparent coin window */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    /* Push content below the coin — coin top is calc(64px+24px+6vh)
+       (navbar clearance, see .coin-fixed-wrap), plus its scaled height
+       (0.62 × 290px ≈ 180px), plus a gap so text doesn't start flush
+       under it. */
+    padding: calc(6vh + 308px) var(--gutter) 4rem;
+    background: linear-gradient(
+      to bottom,
+      transparent   10%,
+      rgba(0,0,0,0.60) 40%,
+      rgba(0,0,0,0.84) 60%
+    );
+    flex: 1;
+    justify-content: flex-start; /* content starts at padding-top, not centred */
+  }
+
+  /* Sections stack directly with no reserved "peek" gap between them —
+     the coin is only ever shown in the hero; every section's own solid
+     background (.split-panel/.split-cards, already opaque here) simply
+     covers it once scrolled past, since .split-sec (z-index:10) already
+     sits above .coin-fixed-wrap (z-index:0). */
+
+  /* Collapse 2-col to single column — matches the desktop rules'
+     specificity (.split-head.panel-l/r) so this actually wins here */
+  .split-head.panel-l,
+  .split-head.panel-r {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .split-void { display: none; }
+
+  .split-panel {
+    border-right: none !important;
+    border-left:  none !important;
+    padding: 2.5rem var(--gutter) 3rem;
+    background: rgba(0,0,0,0.86);
+  }
+
+  .panel-l .split-panel,
+  .panel-r .split-panel { order: unset; }
+
+  .split-cards { padding: 0 var(--gutter) 4rem; }
+
+  /* Collapse the header+extra-content split-grid to a single column */
+  .split-grid.panel-l,
+  .split-grid.panel-r {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "panel"
+      "cards";
+  }
+  .split-grid .split-panel { min-height: auto; }
+  .split-grid .split-void  { display: none; }
+  .split-grid.panel-l .split-cards,
+  .split-grid.panel-r .split-cards { border-right: none; border-left: none; }
+
+  /* Grids */
+  .cat-grid   { grid-template-columns: 1fr 1fr; }
+  .steps      { grid-template-columns: 1fr 1fr; }
+  .format-grid,
+  .price-grid { grid-template-columns: 1fr; }
+
+  .sec        { padding: 4.5rem 1.5rem; }
+  .nav-links     { display: none; }
+  .nav-hamburger { display: flex; }
+  .nav-mobile-menu { display: block; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE  (≤ 560px)
+   Coin slightly smaller — 48× scale.
+══════════════════════════════════════════════════════════ */
+@media (max-width: 560px) {
+
+  /* Same navbar clearance as the tablet breakpoint above. */
+  .coin-fixed-wrap { padding-top: calc(64px + 20px + 4vh); }
+
+  .coin-size-wrap {
+    transform: scale(0.48);
+    transform-origin: center top;
+  }
+
+  .coin-fixed-wrap::after {
+    background: radial-gradient(
+      ellipse at 50% calc(16% + 72px),
+      transparent 20%,
+      rgba(0,0,0,0.55) 48%,
+      rgba(0,0,0,0.90) 100%
+    );
+  }
+
+  /* Same logic as the tablet breakpoint: coin top calc(64px+20px+4vh) +
+     scaled height (0.48 × 290px ≈ 140px) + a gap. */
+  .hero-panel { padding: calc(4vh + 260px) var(--gutter) 3.5rem; }
+
+  .cat-grid, .steps { grid-template-columns: 1fr; }
+
+  .split-panel { padding: 2rem var(--gutter) 2.5rem; }
+  .split-cards { padding: 0 var(--gutter) 3rem; }
+}
