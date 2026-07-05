@@ -7,7 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* Deterministic pseudo-random, seeded by index — Math.random() directly
+/* Deterministic pseudo-random, seeded by index - Math.random() directly
    in render produces different values on the server vs. the client,
    which React flags as a hydration mismatch. This is a pure function of
    `seed`, so server and client always compute the identical value. */
@@ -31,7 +31,7 @@ const PARTICLES = Array.from({ length: 24 }, (_, i) => ({
   opacity:            round(0.12 + seededRandom(i * 7 + 7) * 0.22, 6),
 }));
 
-/* Engraved emblem — a small team (three business contacts) with a growth
+/* Engraved emblem - a small team (three business contacts) with a growth
    arrow rising through them: this data turns into leads, and leads turn
    into growth. Original artwork (not traced from any reference), same
    embossed treatment as the old "V" letterform: a light highlight
@@ -76,16 +76,16 @@ function CoinRingText({ id, text }: { id: string; text: string }) {
 }
 
 /* Must mirror --content-max / the 7fr:3fr split in globals.css. */
-const CONTENT_MAX = 1400; // px — page never grows wider than this
+const CONTENT_MAX = 1400; // px - page never grows wider than this
 const VOID_FRAC   = 0.30; // coin/void column's share of the content width
 
 /**
  * Per-section side (desktop). +1 → content-left / coin right half.
  * -1 → content-right / coin left half. The actual pixel offset is
  * derived at measure-time from the *current* viewport, clamped to
- * CONTENT_MAX — see coinOffsetPx() below.
+ * CONTENT_MAX - see coinOffsetPx() below.
  *
- * Ticker is deliberately absent — it's a thin full-width marquee, not a
+ * Ticker is deliberately absent - it's a thin full-width marquee, not a
  * left/right content section, so it's skipped as a coin checkpoint. The
  * coin stays on the hero's side (right) straight through the ticker and
  * only makes its first move when Categories arrives.
@@ -116,21 +116,21 @@ export function CoinFixed() {
   }, []);
 
   /**
-   * Four-layer transform hierarchy — each ref owns one concern:
+   * Four-layer transform hierarchy - each ref owns one concern:
    *
-   *   sizeRef  — CSS scale only  (mobile: 0.5×, tablet: 0.65×, desktop: 1×)
+   *   sizeRef  - CSS scale only  (mobile: 0.5×, tablet: 0.65×, desktop: 1×)
    *              GSAP NEVER touches this element.
    *
-   *   posRef   — translateX, eased every frame toward a scrollY-derived
+   *   posRef   - translateX, eased every frame toward a scrollY-derived
    *              target (desktop: slides left / right per section)
    *
-   *   tiltRef  — direct style.transform rotateX/Y  (mouse parallax)
+   *   tiltRef  - direct style.transform rotateX/Y  (mouse parallax)
    *              GSAP NEVER touches this element.
    *
-   *   coinRef  — rotateY, eased every frame toward the same scrollY-
+   *   coinRef  - rotateY, eased every frame toward the same scrollY-
    *              derived target (flip) / GSAP y-tween (idle float)
    *              NO CSS transform in stylesheet, no idle rotation.
-   *              Size stays constant — only sizeRef scales, per breakpoint.
+   *              Size stays constant - only sizeRef scales, per breakpoint.
    */
   const wrapRef  = useRef<HTMLDivElement>(null);
   const sizeRef  = useRef<HTMLDivElement>(null);
@@ -150,7 +150,7 @@ export function CoinFixed() {
 
   /* ── Intro: coin drops in from above on first load ────────────
      Desktop: vertical drop on posRef.
-     Mobile/tablet: roll in from above — posRef y + tiltRef rotateX
+     Mobile/tablet: roll in from above - posRef y + tiltRef rotateX
      (tumble) + coinRef rotateY (spin) for a coin rolling out feel. */
   useEffect(() => {
     if (!pageReady) return;
@@ -181,20 +181,20 @@ export function CoinFixed() {
   }, [pageReady]);
 
   /* ── X-position + flip: a single deterministic function of scrollY,
-     re-evaluated every frame — NOT multiple independent GSAP tweens on
+     re-evaluated every frame - NOT multiple independent GSAP tweens on
      the same shared properties. (An earlier version used one gsap.fromTo
      scrub-tween per section, all targeting the same pos.x / coin.rotateY.
      Each one renders its own "from" state the instant it's created, and
      since every band's progress is 0 at mount, the LAST one created wins
-     — which put Hero at Contact's "from" position/face instead of its
+     - which put Hero at Contact's "from" position/face instead of its
      own. Same class of bug could re-fire on any ScrollTrigger refresh.)
      Here there's exactly one owner: each frame we find which transition
      band scrollY falls in, linearly interpolate x/rotateY within it, and
-     ease the coin toward that target — always correct regardless of
+     ease the coin toward that target - always correct regardless of
      scroll speed, direction, or refreshes.
      Each transition is a full 360° turn (not a 180° flip), so the coin
      always comes to rest showing the SAME face on both the left and the
-     right — the back face has no readable content, so resting on it left
+     right - the back face has no readable content, so resting on it left
      the coin looking blank on every left-side section. A full turn still
      reads as a lively "flip" mid-transition without ever settling there.
      Desktop only; the coin stays put with no turn on mobile since it
@@ -213,7 +213,7 @@ export function CoinFixed() {
 
     type Band = { start: number; end: number; xFrom: number; xTo: number; rotFrom: number; rotTo: number };
     let bands: Band[] = [];
-    let heroX = 0; // px — recomputed in measure(), used as the pre-Categories default
+    let heroX = 0; // px - recomputed in measure(), used as the pre-Categories default
 
     const measure = () => {
       const vh = window.innerHeight;
@@ -251,18 +251,18 @@ export function CoinFixed() {
 
     measure();
     /* Start already at the pose matching the CURRENT scrollY, not the
-       hero default — browsers restore scroll position on refresh, so
+       hero default - browsers restore scroll position on refresh, so
        always starting from heroX/0 made the coin visibly slide/rotate
        into place on every reload of a mid-page scroll position. */
     const initial = targetFor(window.scrollY);
     let curX = initial.x, curRot = initial.rot, raf: number;
 
     /* The browser's own scroll-restoration-on-refresh isn't guaranteed to
-       have landed by the time this effect runs — it can arrive a frame
+       have landed by the time this effect runs - it can arrive a frame
        or few later (Lenis re-reads real scrollY too), which would jump
        window.scrollY out from under us mid-mount. Snapping (no easing)
        for a brief settle window after mount absorbs that jump instantly
-       instead of visibly gliding to the corrected pose — that glide is
+       instead of visibly gliding to the corrected pose - that glide is
        what read as a "shake" on refresh. Normal scroll-driven easing
        resumes right after.  */
     const mountedAt = performance.now();
@@ -325,34 +325,6 @@ export function CoinFixed() {
     });
 
     return () => st.kill();
-  }, []);
-
-  /* ── Mobile/tablet: coin eases back as hero content scrolls over ─ */
-  useEffect(() => {
-    if (!window.matchMedia("(max-width: 900px)").matches) return;
-
-    const size = sizeRef.current;
-    const wrap = wrapRef.current;
-    const hero = document.querySelector("#hero");
-    if (!size || !wrap || !hero) return;
-
-    const st = ScrollTrigger.create({
-      trigger: hero,
-      start: "top top",
-      end: "55% top",
-      scrub: 0.85,
-      onUpdate: (self) => {
-        const progress = self.progress;
-        size.style.setProperty("--coin-scroll-scale", String(1 - progress * 0.12));
-        wrap.style.opacity = String(1 - progress * 0.4);
-      },
-    });
-
-    return () => {
-      st.kill();
-      size.style.removeProperty("--coin-scroll-scale");
-      wrap.style.opacity = "";
-    };
   }, []);
 
   /* ── Mouse parallax → tiltRef only (GSAP never touches it) ──── */
@@ -433,7 +405,7 @@ export function CoinFixed() {
         </div>
       </div>
 
-      {/* Particles: client-only — inline styles with sub-pixel values hydrate
+      {/* Particles: client-only - inline styles with sub-pixel values hydrate
           differently between React SSR and the browser in Next 15. */}
       {particlesReady && (
         <ul className="coin-particles">

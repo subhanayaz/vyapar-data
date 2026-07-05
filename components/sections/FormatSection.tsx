@@ -40,7 +40,7 @@ export function FormatSection() {
             <div className="sec-eyebrow">What you get</div>
           </ScrollReveal>
           <ScrollReveal delay={80}>
-            <h2 className="sec-h">Clean Excel files,<br />ready to use</h2>
+            <h2 className="sec-h">Clean data, ready to use</h2>
           </ScrollReveal>
           <ScrollReveal delay={140}>
             <RevealStagger className="format-info" fromTop>

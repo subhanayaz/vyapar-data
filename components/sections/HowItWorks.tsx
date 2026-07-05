@@ -48,12 +48,12 @@ export function HowItWorks() {
             <div className="sec-eyebrow">How it works</div>
           </ScrollReveal>
           <ScrollReveal delay={80}>
-            <h2 className="sec-h">Four easy steps</h2>
+            <h2 className="sec-h">From target to file in minutes</h2>
           </ScrollReveal>
           <ScrollReveal delay={140}>
             <p className="sec-p">
-              From picking your target industry to downloading a clean lead
-              file — four steps, minutes not days.
+              No calls, no sales pitch, no waiting on quotes. Four simple steps
+              and a clean lead file is in your inbox - minutes, not days.
             </p>
           </ScrollReveal>
         </div>

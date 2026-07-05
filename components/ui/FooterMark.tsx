@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 /**
  * Huge footer wordmark. A dim base layer sits under a second identical
  * layer whose text is filled by a radial gradient (background-clip:text)
- * centred on the cursor — so the letters catch a bright chrome highlight
+ * centred on the cursor - so the letters catch a bright chrome highlight
  * that follows the mouse, and fade back to barely-there when it leaves.
  *
  * Font size is measured and rescaled (not just clamp()'d to viewport

@@ -33,23 +33,23 @@ export const FORMAT_SAMPLE_ROWS: FormatSampleRow[] = [
 export const HOW_IT_WORKS_STEPS = [
   {
     number: "01",
-    title: "Pick a category",
-    body: "Tell us the industry and location you need.",
+    title: "Tell us your target",
+    body: "Pick the industry, audience, and location you want to reach.",
   },
   {
     number: "02",
-    title: "Check a sample",
-    body: "We send 50–100 rows so you can verify quality.",
+    title: "See a free sample",
+    body: "We send 50–100 live rows so you can verify the quality first.",
   },
   {
     number: "03",
     title: "Pay once",
-    body: "UPI, bank transfer, or online — no subscription.",
+    body: "UPI, bank transfer, or card - one payment, no subscription.",
   },
   {
     number: "04",
-    title: "Download",
-    body: "Get your Excel or CSV by email within minutes.",
+    title: "Get your file",
+    body: "Your Excel or CSV lands in email and WhatsApp within minutes.",
   },
 ] as const;
 
@@ -57,21 +57,16 @@ export const FORMAT_FEATURES = [
   {
     icon: "📄",
     title: "Excel & CSV",
-    description: "Works in Excel, Google Sheets, or your CRM.",
+    description: "Import straight into Excel, Google Sheets, or any CRM.",
   },
-  // {
-  //   icon: "🔄",
-  //   title: "Yours forever",
-  //   description: "One payment. No expiry or renewal.",
-  // },
   {
     icon: "📦",
-    title: "Full details",
-    description: "Name, phone, email, address, city, state, pincode.",
+    title: "Complete records",
+    description: "Business name, phone, email, address, city, state, pincode.",
   },
   {
     icon: "⚡",
-    title: "Fast delivery",
-    description: "File sent to email and WhatsApp after payment.",
+    title: "Instant delivery",
+    description: "Sent to your email and WhatsApp the moment payment clears.",
   },
 ] as const;

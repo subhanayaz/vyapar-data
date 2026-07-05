@@ -67,12 +67,12 @@ export function Categories() {
             <div className="sec-eyebrow">Categories</div>
           </ScrollReveal>
           <ScrollReveal delay={80}>
-            <h2 className="sec-h">Data for every industry</h2>
+            <h2 className="sec-h">Leads for every market</h2>
           </ScrollReveal>
           <ScrollReveal delay={140}>
             <p className="sec-p">
-              Pick your industry. Filter by city or state. Get contacts that
-              match your sales goals.
+              Whether you sell B2B or B2C, pick your target, filter by city or
+              state, and get contacts that match exactly who you&apos;re after.
             </p>
           </ScrollReveal>
         </div>

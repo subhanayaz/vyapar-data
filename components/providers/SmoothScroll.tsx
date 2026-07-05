@@ -14,6 +14,11 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       duration: 1.4,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
+      // Lenis defaults touch to native (unsmoothed) scrolling - syncTouch
+      // opts touch drags into the same eased scrolling as wheel/trackpad.
+      syncTouch: true,
+      syncTouchLerp: 0.075,
+      touchInertiaExponent: 1.7,
     });
 
     gsap.ticker.add((time) => {

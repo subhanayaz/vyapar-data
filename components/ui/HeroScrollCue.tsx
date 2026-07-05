@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePageReady } from "@/components/providers/PageLoadGate";
-import { scrollByViewport } from "@/lib/scroll";
+import { scrollToSection } from "@/lib/scroll";
 
 export function HeroScrollCue() {
   const pageReady = usePageReady();
@@ -15,7 +15,10 @@ export function HeroScrollCue() {
     if (!isMobile) return;
 
     const showCue = () => setVisible(window.scrollY < 72);
-    const appearTimer = window.setTimeout(showCue, 1900);
+    // Was 1900ms - combined with the page-load gate, the button could sit
+    // un-tappable (pointer-events:none until "is-visible") for 2.5s+, long
+    // enough that an early tap silently did nothing and read as broken.
+    const appearTimer = window.setTimeout(showCue, 500);
 
     window.addEventListener("scroll", showCue, { passive: true });
 
@@ -30,8 +33,12 @@ export function HeroScrollCue() {
       type="button"
       className={`hero-scroll-cue${visible ? " is-visible" : ""}`}
       aria-label="Scroll down for content"
-      onClick={() => scrollByViewport(1)}
+      // Jumps straight to the content section (same target as the "Explore
+      // data" CTA) instead of an arbitrary one-viewport nudge, so it always
+      // lands somewhere meaningful regardless of hero height.
+      onClick={() => scrollToSection("hero-panel")}
     >
+
       <span className="hero-scroll-cue-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24">
           <path d="M12 5v10M7 12l5 5 5-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

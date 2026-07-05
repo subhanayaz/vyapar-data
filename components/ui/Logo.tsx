@@ -4,7 +4,7 @@ type LogoProps = {
   href?: string;
 };
 
-/** Abstract chrome network mark — three connected nodes standing in for a
+/** Abstract chrome network mark - three connected nodes standing in for a
  *  network of business data, rendered with the same metallic gradients
  *  as the hero coin so the material language matches without repeating
  *  its literal letterform. */

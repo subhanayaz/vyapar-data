@@ -1,6 +1,6 @@
 # VyaparData
 
-Landing page for VyaparData — India's B2B business data marketplace.
+Landing page for VyaparData - India's B2B business data marketplace.
 
 ## Stack
 

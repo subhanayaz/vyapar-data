@@ -24,7 +24,7 @@ export default function PrivacyPage() {
             VyaparData (&quot;we&quot;, &quot;us&quot;) compiles and sells business
             contact lists to other businesses for sales and marketing outreach.
             This page explains what data we hold, where it comes from, and what
-            rights you have over it — whether you&apos;re a customer buying a
+            rights you have over it - whether you&apos;re a customer buying a
             list from us, or a business whose listing appears in one.
           </p>
 
@@ -33,14 +33,14 @@ export default function PrivacyPage() {
           <ul className="legal-list">
             <li>Business contact records we compile for sale: business name, owner/contact name, phone number, email, address, city, state, pincode, and industry category.</li>
             <li>Customer details you give us when you request a sample or place an order: your name, phone/WhatsApp number, industry of interest, and any city/state you specify.</li>
-            <li>Basic technical data from visiting this website (e.g. browser type, pages viewed) for keeping the site running securely — we do not use tracking cookies or ad networks.</li>
+            <li>Basic technical data from visiting this website (e.g. browser type, pages viewed) for keeping the site running securely - we do not use tracking cookies or ad networks.</li>
           </ul>
 
           <h2 className="legal-h2">2. Where business contact data comes from</h2>
           <p className="legal-p">
             The records in our lists are compiled from publicly available
-            sources — online business directories, maps and location
-            listing platforms, and other public business listings — the
+            sources - online business directories, maps and location
+            listing platforms, and other public business listings - the
             kind of information a business itself has already made
             publicly visible so customers can find it. We organise this
             information by industry and location; we do not collect

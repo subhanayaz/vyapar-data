@@ -9,13 +9,14 @@ const LINKS = [
   { href: "#how", label: "How It Works" },
   { href: "#pricing", label: "Pricing" },
   { href: "#faq", label: "FAQ" },
-  { href: "#contact", label: "Get Started" },
+  { href: "#contact", label: "Get free sample" },
 ];
 
 export function Nav() {
   const [open, setOpen] = useState(false);
 
   return (
+    <>
     <nav className="nav">
       <div className="nav-inner">
         <Logo />
@@ -29,7 +30,7 @@ export function Nav() {
           className="nav-cta"
           onClick={() => scrollToSection("contact")}
         >
-          Get Started
+          Get free sample
         </button>
         <button
           type="button"
@@ -54,5 +55,14 @@ export function Nav() {
         </ul>
       </div>
     </nav>
+
+    <button
+      type="button"
+      className={`nav-overlay${open ? " is-open" : ""}`}
+      aria-label="Close menu"
+      tabIndex={open ? 0 : -1}
+      onClick={() => setOpen(false)}
+    />
+    </>
   );
 }

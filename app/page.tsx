@@ -14,7 +14,7 @@ import { EarlyAccess } from "@/components/sections/EarlyAccess";
 export default function HomePage() {
   return (
     <>
-      {/* CSS 3D coin — fixed behind everything, zero WebGL */}
+      {/* CSS 3D coin - fixed behind everything, zero WebGL */}
       <CoinFixed />
       <HeroScrollCue />
 
