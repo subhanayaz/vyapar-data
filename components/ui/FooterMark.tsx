@@ -21,12 +21,17 @@ export function FooterMark({ text }: { text: string }) {
     const el = textRef.current;
     if (!wrap || !el) return;
 
+    let frame = 0;
+
     const fit = () => {
-      const currentSize = parseFloat(getComputedStyle(el).fontSize);
-      const natural = el.scrollWidth;
-      if (!natural || !currentSize) return;
-      const fontSize = (wrap.clientWidth / natural) * currentSize;
-      wrap.style.setProperty("--fs", `${fontSize}px`);
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const currentSize = parseFloat(getComputedStyle(el).fontSize);
+        const natural = el.scrollWidth;
+        if (!natural || !currentSize) return;
+        const fontSize = (wrap.clientWidth / natural) * currentSize;
+        wrap.style.setProperty("--fs", `${fontSize}px`);
+      });
     };
 
     fit();
@@ -35,7 +40,10 @@ export function FooterMark({ text }: { text: string }) {
     const ro = new ResizeObserver(fit);
     ro.observe(wrap);
 
-    return () => ro.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      ro.disconnect();
+    };
   }, [text]);
 
   const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
