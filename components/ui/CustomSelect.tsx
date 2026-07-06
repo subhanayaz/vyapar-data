@@ -122,6 +122,7 @@ export function CustomSelect({
           tabIndex={-1}
           onKeyDown={handleListKeyDown}
           ref={(node) => node?.focus()}
+          data-lenis-prevent-vertical
         >
           {options.map((option, index) => (
             <li

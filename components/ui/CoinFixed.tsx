@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePageReady } from "@/components/providers/PageLoadGate";
+import { getLenisInstance } from "@/lib/lenis-bridge";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -132,6 +133,7 @@ export function CoinFixed() {
    *              NO CSS transform in stylesheet, no idle rotation.
    *              Size stays constant - only sizeRef scales, per breakpoint.
    */
+  const screenRef = useRef<HTMLDivElement>(null);
   const wrapRef  = useRef<HTMLDivElement>(null);
   const sizeRef  = useRef<HTMLDivElement>(null);
   const posRef   = useRef<HTMLDivElement>(null);
@@ -148,31 +150,12 @@ export function CoinFixed() {
     return () => { t.kill(); };
   }, [pageReady]);
 
-  /* ── Intro: coin drops in from above on first load ────────────
-     Desktop: vertical drop on posRef.
-     Mobile/tablet: roll in from above - posRef y + tiltRef rotateX
-     (tumble) + coinRef rotateY (spin) for a coin rolling out feel. */
+  /* ── Intro: coin drops in from above on first load ────────────── */
   useEffect(() => {
     if (!pageReady) return;
 
     const pos = posRef.current;
-    const tilt = tiltRef.current;
-    const coin = coinRef.current;
     if (!pos) return;
-
-    const isMobile = window.matchMedia("(max-width: 900px)").matches;
-
-    if (isMobile && tilt && coin) {
-      gsap.set(tilt, { rotateX: -720, rotateZ: 8 });
-      gsap.set(coin, { rotateY: -540 });
-      gsap.set(pos, { y: -(window.innerHeight * 0.62 + 140) });
-
-      const timeline = gsap.timeline({ delay: 0.15 });
-      timeline.to(pos,  { y: 0, duration: 1.7, ease: "power3.out" }, 0);
-      timeline.to(tilt, { rotateX: 0, rotateZ: 0, duration: 1.7, ease: "power3.out" }, 0);
-      timeline.to(coin, { rotateY: 0, duration: 1.7, ease: "power3.out" }, 0);
-      return () => { timeline.kill(); };
-    }
 
     const tween = gsap.to(pos, {
       y: 0, duration: 1.4, delay: 0.3, ease: "power3.out",
@@ -293,15 +276,16 @@ export function CoinFixed() {
     };
   }, []);
 
-  /* ── Un-pin from the viewport once the last coin section (#contact)
-     ends, so the coin scrolls away with the page instead of staying
-     fixed and getting clipped/covered by the footer beneath it.
+  /* ── Desktop: un-pin from the viewport once the last coin section
+     (#contact) ends, so the coin scrolls away with the page instead of
+     staying fixed and getting clipped/covered by the footer beneath it.
      Freezes it exactly where it visually sits at that boundary, then
      restores position:fixed if the user scrolls back up above it. ─── */
   useEffect(() => {
     const wrap = wrapRef.current;
     const last = document.querySelector("#contact");
     if (!wrap || !last) return;
+    if (window.matchMedia("(max-width: 900px)").matches) return;
 
     const st = ScrollTrigger.create({
       trigger: last,
@@ -325,6 +309,83 @@ export function CoinFixed() {
     });
 
     return () => st.kill();
+  }, []);
+
+  /* ── Mobile: the browser restores scroll position on a hard reload by
+     default (history.scrollRestoration = "auto") - so refreshing while
+     scrolled past the coin lands right back there, and it never gets
+     to show. Incognito/a fresh tab has no history to restore from,
+     which is why it always worked there. Opting out and snapping to
+     the top makes every fresh load of this page start at the coin,
+     matching a hard refresh's intent regardless of prior scroll. ──── */
+  useEffect(() => {
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }, []);
+
+  /* ── Mobile: the coin lives in its own normal (non-fixed) 100vh screen
+     at the very top of the page (see the JSX below + globals.css) - it
+     never slides or stays pinned behind Hero/Ticker/Categories, it just
+     scrolls away like any other section once the user scrolls past it.
+
+     Two things plain scrolling wouldn't do on its own:
+     1. Scrolling through a static 100vh block feels like dead space -
+        so its opacity is tied directly to scroll progress across that
+        first screen, fading smoothly to invisible by the time the user
+        has scrolled past it, instead of just sliding away unchanged.
+     2. Stop the user from scrolling back UP into that screen again -
+        so the instant they cross it (once, ever, per page load), its
+        height collapses to 0 - permanently, until an actual reload -
+        and the scroll position is nudged up by exactly that (fixed,
+        known: one viewport height) amount in the same tick, so nothing
+        visibly jumps.
+
+     Lenis owns scrolling here (SmoothScroll.tsx), not the browser - it
+     re-asserts its own tracked position every rAF tick, so nudging the
+     native scroll directly would get fought/overwritten by Lenis a
+     frame later. Going through lenis.scrollTo with immediate:true keeps
+     Lenis's own state in sync instead of fighting it.
+
+     Plain scroll listener, not GSAP ScrollTrigger - this only needs a
+     one-time threshold check, and remembering trigger-refresh semantics
+     that need to work correctly. ────────────────────────────────────*/
+  useEffect(() => {
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
+    const screen = screenRef.current;
+    const wrap = wrapRef.current;
+    if (!screen || !wrap) return;
+
+    let collapsed = false;
+
+    const onScroll = () => {
+      if (collapsed) return;
+      const vh = window.innerHeight;
+      const progress = Math.min(1, Math.max(0, window.scrollY / vh));
+
+      wrap.style.opacity = String(1 - progress);
+
+      if (progress < 1) return;
+
+      collapsed = true;
+      window.removeEventListener("scroll", onScroll);
+
+      screen.style.height = "0px";
+      screen.style.overflow = "hidden";
+
+      const targetY = window.scrollY - vh;
+      const lenis = getLenisInstance();
+      if (lenis) {
+        lenis.scrollTo(targetY, { immediate: true });
+      } else {
+        window.scrollTo(0, targetY);
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   /* ── Mouse parallax → tiltRef only (GSAP never touches it) ──── */
@@ -356,64 +417,66 @@ export function CoinFixed() {
   }, []);
 
   return (
-    <div ref={wrapRef} className="coin-fixed-wrap" aria-hidden="true">
-      <div className="coin-ambient" />
+    <div ref={screenRef} className="coin-mobile-screen">
+      <div ref={wrapRef} className="coin-fixed-wrap" aria-hidden="true">
+        <div className="coin-ambient" />
 
-      {/* Layer 1: CSS-only scale for mobile/tablet */}
-      <div ref={sizeRef} className="coin-size-wrap">
+        {/* Layer 1: CSS-only scale for mobile/tablet */}
+        <div ref={sizeRef} className="coin-size-wrap">
 
-        {/* Layer 2: GSAP x-slide */}
-        <div ref={posRef} className="coin-positioner">
+          {/* Layer 2: GSAP x-slide */}
+          <div ref={posRef} className="coin-positioner">
 
-          {/* Layer 3: mouse tilt */}
-          <div ref={tiltRef} className="coin-tilt">
-            <div className="coin-scene">
+            {/* Layer 3: mouse tilt */}
+            <div ref={tiltRef} className="coin-tilt">
+              <div className="coin-scene">
 
-              {/* Layer 4: GSAP rotation + float */}
-              <div ref={coinRef} className="coin-3d">
+                {/* Layer 4: GSAP rotation + float */}
+                <div ref={coinRef} className="coin-3d">
 
-                <div className="coin-face coin-front">
-                  <div className="coin-sheen" />
-                  <div className="coin-face-content">
-                    <CoinEmblem />
-                    <CoinRingText id="ring-front"
-                      text="  VYAPAR · DATA · INDIA · BUSINESS LEADS ·  " />
+                  <div className="coin-face coin-front">
+                    <div className="coin-sheen" />
+                    <div className="coin-face-content">
+                      <CoinEmblem />
+                      <CoinRingText id="ring-front"
+                        text="  VYAPAR · DATA · INDIA · BUSINESS LEADS ·  " />
+                    </div>
+                    <div className="coin-ring-outer" />
+                    <div className="coin-ring-inner" />
                   </div>
-                  <div className="coin-ring-outer" />
-                  <div className="coin-ring-inner" />
+
+                  <div className="coin-face coin-back">
+                    <div className="coin-sheen coin-sheen-back" />
+                    <div className="coin-face-content coin-back-content">
+                      <span className="coin-b2b">B2B</span>
+                      <span className="coin-data-lbl">DATA</span>
+                      <span className="coin-india-lbl">INDIA</span>
+                      <CoinRingText id="ring-back"
+                        text="  VERIFIED · LEADS · EXCEL · CSV · READY ·  " />
+                    </div>
+                    <div className="coin-ring-outer" />
+                    <div className="coin-ring-inner" />
+                  </div>
+
+                  <div className="coin-edge" />
                 </div>
 
-                <div className="coin-face coin-back">
-                  <div className="coin-sheen coin-sheen-back" />
-                  <div className="coin-face-content coin-back-content">
-                    <span className="coin-b2b">B2B</span>
-                    <span className="coin-data-lbl">DATA</span>
-                    <span className="coin-india-lbl">INDIA</span>
-                    <CoinRingText id="ring-back"
-                      text="  VERIFIED · LEADS · EXCEL · CSV · READY ·  " />
-                  </div>
-                  <div className="coin-ring-outer" />
-                  <div className="coin-ring-inner" />
-                </div>
-
-                <div className="coin-edge" />
+                <div className="coin-reflection" />
               </div>
-
-              <div className="coin-reflection" />
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Particles: client-only - inline styles with sub-pixel values hydrate
-          differently between React SSR and the browser in Next 15. */}
-      {particlesReady && (
-        <ul className="coin-particles">
-          {PARTICLES.map((style, i) => (
-            <li key={i} className="particle" style={style} />
-          ))}
-        </ul>
-      )}
+        {/* Particles: client-only - inline styles with sub-pixel values hydrate
+            differently between React SSR and the browser in Next 15. */}
+        {particlesReady && (
+          <ul className="coin-particles">
+            {PARTICLES.map((style, i) => (
+              <li key={i} className="particle" style={style} />
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

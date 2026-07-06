@@ -1,4 +1,5 @@
 import { HOW_IT_WORKS_STEPS } from "@/data/samples";
+import { BoxSlider } from "@/components/ui/BoxSlider";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { RevealStagger } from "@/components/ui/RevealStagger";
 import { DrawIcon } from "@/components/ui/DrawIcon";
@@ -37,6 +38,18 @@ function DownloadIcon() {
 const STEP_ICONS = [PickIcon, SampleIcon, PayIcon, DownloadIcon];
 
 export function HowItWorks() {
+  const renderStep = (step: (typeof HOW_IT_WORKS_STEPS)[number], i: number) => {
+    const Icon = STEP_ICONS[i];
+    return (
+      <div key={i} className="step loc-step-card">
+        {Icon && <DrawIcon size={34} delay={i * 120}><Icon /></DrawIcon>}
+        <div className="step-n">{step.number}</div>
+        <h3>{step.title}</h3>
+        <p>{step.body}</p>
+      </div>
+    );
+  };
+
   return (
     <section className="split-sec" id="how">
       {/* ── Split: coin LEFT, content + steps grid RIGHT (same column) ── */}
@@ -59,19 +72,12 @@ export function HowItWorks() {
         </div>
 
         <div className="split-cards">
-          <RevealStagger className="steps" fromTop>
-            {HOW_IT_WORKS_STEPS.map((step, i) => {
-              const Icon = STEP_ICONS[i];
-              return (
-                <div key={i} className="step">
-                  {Icon && <DrawIcon size={34} delay={i * 120}><Icon /></DrawIcon>}
-                  <div className="step-n">{step.number}</div>
-                  <h3>{step.title}</h3>
-                  <p>{step.body}</p>
-                </div>
-              );
-            })}
+          <RevealStagger className="steps loc-grid-desktop" fromTop>
+            {HOW_IT_WORKS_STEPS.map(renderStep)}
           </RevealStagger>
+          <BoxSlider ariaLabel="How it works" className="loc-slider-mobile">
+            {HOW_IT_WORKS_STEPS.map(renderStep)}
+          </BoxSlider>
         </div>
       </div>
     </section>

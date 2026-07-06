@@ -36,6 +36,7 @@ export function BoxSlider({ children, ariaLabel, className = "" }: BoxSliderProp
         role="list"
         aria-label={ariaLabel}
         onScroll={updateEdges}
+        data-lenis-prevent-horizontal
       >
         {children}
       </div>

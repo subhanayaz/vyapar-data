@@ -1068,7 +1068,7 @@ html.is-loading body {
 
 .cat-num {
   font-family:var(--font-space-grotesk),sans-serif; font-size:1.8rem;
-  font-weight:700; color:rgba(255,255,255,0.055);
+  font-weight:700; color:rgba(255,255,255,0.22);
   line-height:1; margin-bottom:1.2rem;
 }
 .cat-card .draw-icon {
@@ -1109,7 +1109,7 @@ html.is-loading body {
 .step .draw-icon { color:var(--gray-dim); margin-bottom:1.2rem; transition:color 0.3s; }
 .step-n {
   font-family:var(--font-inter),sans-serif; font-size:0.6rem; font-weight:500;
-  color:rgba(168,168,168,0.38); letter-spacing:0.22em;
+  color:var(--gray-dim); letter-spacing:0.22em;
   text-transform:uppercase; margin-bottom:0.7rem;
 }
 .step h3 {
@@ -1594,11 +1594,11 @@ footer.site-footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--glass-b);
+  border: 1px solid rgba(255,255,255,0.22);
   border-radius: 999px;
   background: transparent;
-  color: var(--gray-dim);
-  font-size: 1.1rem;
+  color: var(--gray);
+  font-size: 1.25rem;
   line-height: 1;
   cursor: pointer;
   transition: color 0.22s, border-color 0.22s, background 0.22s, opacity 0.22s;
@@ -1623,7 +1623,8 @@ footer.site-footer {
 .loc-coverage-card .draw-icon { color: var(--gray-dim); margin-bottom: 1rem; transition: color 0.25s; }
 .loc-coverage-card:hover .draw-icon { color: var(--white); }
 
-/* Industries and How it works: full grid on desktop/tablet, swipeable
+/* Card-grid sections (Industries, How it works, Pricing - on both the
+   homepage and location pages): full grid on desktop/tablet, swipeable
    slider only on mobile - each renders both blocks, one hidden via CSS. */
 .loc-slider-mobile { display: none; }
 
@@ -1635,6 +1636,12 @@ footer.site-footer {
 }
 .loc-slider-mobile .loc-cat-card {
   flex: 0 0 78vw;
+  border: 1px solid var(--glass-b);
+  scroll-snap-align: start;
+}
+.loc-slider-mobile .loc-price-card {
+  flex: 0 0 auto;
+  width: min(280px, 80vw);
   border: 1px solid var(--glass-b);
   scroll-snap-align: start;
 }
@@ -1847,14 +1854,25 @@ footer.site-footer {
 
   .legal-page { padding: 6rem 0 4rem; }
 
+  /* Coin: its own normal (non-fixed), 100vh screen at the very top of
+     the page - not an overlay sitting behind Hero/Ticker/Categories.
+     It scrolls away like any other section once the user scrolls past
+     it, and CoinFixed.tsx collapses this screen to 0 height the instant
+     that happens (once, ever, per page load) so there's nothing left to
+     scroll back up into - only an actual page reload brings it back. */
+  .coin-mobile-screen {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+  }
+
   .coin-fixed-wrap {
+    position: absolute;
     align-items: center;
     padding-top: 0;
     clip-path: inset(64px 0 0 0);
     -webkit-clip-path: inset(64px 0 0 0);
   }
-
-  .coin-positioner { transform: translateY(calc(-100vh - 140px)); }
 
   .coin-size-wrap {
     --coin-base-scale: 0.50;
@@ -1877,27 +1895,22 @@ footer.site-footer {
     );
   }
 
-  /* First viewport: coin only. Scroll reveals sticky hero content on top. */
+  /* Hero: one normal section, same as every other section on the page -
+     sized to its own content, no sticky, no forced viewport height, no
+     separate scroll behaviour, nothing to scroll back into. */
   .hero-split {
     grid-template-columns: 1fr;
-    min-height: 200vh;
+    min-height: auto;
     display: block;
   }
 
   .hero-void { display: none; }
 
   .hero-panel {
-    position: sticky;
-    top: 0;
-    /* min-height: 100vh; */
-    margin-top: 100vh;
     border-right: none;
     padding: 5.5rem var(--gutter) 4rem;
-    background: rgba(0,0,0,0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(0,0,0,0.45);
     flex: unset;
-    justify-content: center;
   }
 
   /* Sections stack directly - opaque panels cover the fixed coin once
@@ -1972,7 +1985,7 @@ footer.site-footer {
     height: 320px;
   }
 
-  .hero-panel { padding: 5rem var(--gutter) 3.5rem; }
+  .hero-panel { padding: 6rem var(--gutter) 2rem; }
 
   .cat-grid, .steps { grid-template-columns: 1fr; }
 

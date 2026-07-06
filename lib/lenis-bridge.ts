@@ -1,7 +1,10 @@
 type LenisScrollTarget = number | string | HTMLElement;
 
 export type LenisLike = {
-  scrollTo: (target: LenisScrollTarget, options?: { offset?: number; duration?: number }) => void;
+  scrollTo: (
+    target: LenisScrollTarget,
+    options?: { offset?: number; duration?: number; immediate?: boolean },
+  ) => void;
 };
 
 let lenisInstance: LenisLike | null = null;

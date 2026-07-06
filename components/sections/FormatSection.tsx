@@ -63,7 +63,7 @@ export function FormatSection() {
         <div className="split-cards">
           <ScrollReveal className="sample-table-section">
             <div className="sec-eyebrow">Sample row</div>
-            <div className="sample-table-wrap">
+            <div className="sample-table-wrap" data-lenis-prevent-horizontal>
               <div className="sample-table">
                 <div className="st-head">
                   <span>Business</span><span>Mobile</span><span>City</span>

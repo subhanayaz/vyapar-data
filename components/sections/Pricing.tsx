@@ -1,6 +1,7 @@
 "use client";
 
 import { PRICING_PLANS } from "@/data/pricing";
+import { BoxSlider } from "@/components/ui/BoxSlider";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { RevealStagger } from "@/components/ui/RevealStagger";
 import { buildPlanEnquiryWhatsAppUrl } from "@/lib/whatsapp";
@@ -11,6 +12,28 @@ export function Pricing() {
     const url = buildPlanEnquiryWhatsAppUrl({ tier, amount, period, isCustom });
     window.open(url, "_blank", "noopener,noreferrer");
   };
+
+  const renderPlan = (plan: (typeof PRICING_PLANS)[number]) => (
+    <div key={plan.tier} className={`pc loc-price-card${plan.highlighted ? " hi" : ""}`}>
+      <div className="pc-tier">
+        {plan.tier}
+        {plan.badge && <span className="pop-label">{plan.badge}</span>}
+      </div>
+      <div className="pc-note">{plan.note}</div>
+      <div className="pc-amt">{plan.amount}</div>
+      <div className="pc-period">{plan.period}</div>
+      <ul className="pc-list">
+        {plan.features.map((f) => <li key={f}>{f}</li>)}
+      </ul>
+      <button
+        type="button"
+        className="pc-btn"
+        onClick={() => openPlanOnWhatsApp(plan.tier, plan.amount, plan.period)}
+      >
+        {plan.buttonLabel}
+      </button>
+    </div>
+  );
 
   return (
     <section className="split-sec" id="pricing">
@@ -34,29 +57,12 @@ export function Pricing() {
         </div>
 
         <div className="split-cards">
-          <RevealStagger className="price-grid">
-            {PRICING_PLANS.map((plan) => (
-              <div key={plan.tier} className={`pc${plan.highlighted ? " hi" : ""}`}>
-                <div className="pc-tier">
-                  {plan.tier}
-                  {plan.badge && <span className="pop-label">{plan.badge}</span>}
-                </div>
-                <div className="pc-note">{plan.note}</div>
-                <div className="pc-amt">{plan.amount}</div>
-                <div className="pc-period">{plan.period}</div>
-                <ul className="pc-list">
-                  {plan.features.map((f) => <li key={f}>{f}</li>)}
-                </ul>
-                <button
-                  type="button"
-                  className="pc-btn"
-                  onClick={() => openPlanOnWhatsApp(plan.tier, plan.amount, plan.period)}
-                >
-                  {plan.buttonLabel}
-                </button>
-              </div>
-            ))}
+          <RevealStagger className="price-grid loc-grid-desktop">
+            {PRICING_PLANS.map(renderPlan)}
           </RevealStagger>
+          <BoxSlider ariaLabel="Pricing plans" className="loc-slider-mobile">
+            {PRICING_PLANS.map(renderPlan)}
+          </BoxSlider>
         </div>
       </div>
     </section>

@@ -135,7 +135,7 @@ export function LocationSampleTable({ location }: LocationSampleTableProps) {
   return (
     <div className="sample-table-section">
       <div className="sec-eyebrow">Live preview</div>
-      <div className="sample-table-wrap">
+      <div className="sample-table-wrap" data-lenis-prevent-horizontal>
         <div className="sample-table">
           <div className="st-head">
             <span>Business</span><span>Mobile</span><span>City</span>
