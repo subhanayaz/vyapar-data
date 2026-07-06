@@ -505,18 +505,14 @@ html.coin-toss-lock body {
      takes over from this exact value, so there's no visible handoff.
      offset = min(vw, content-max) * 0.35 - 35vw below the 1400px cap,
      a fixed 490px (1400 * 0.35) above it.
-     translateY(-90vh) is the intro drop's starting point - well above
-     the viewport regardless of its height - so the coin is already
-     off-screen-above on first paint; the mount-time GSAP tween in
-     CoinFixed then eases it down to its resting y:0, reading its "from"
-     straight off this computed transform, same handoff trick as the x
-     offset above. */
-  transform: translateX(35vw) translateY(-90vh);
+     No vertical offset - the coin stays put at its resting spot; the
+     intro (CoinFixed.tsx) spins it in place rather than moving it. */
+  transform: translateX(35vw);
   will-change: transform;
 }
 
 @media (min-width: 1400px) {
-  .coin-positioner { transform: translateX(490px) translateY(-90vh); }
+  .coin-positioner { transform: translateX(490px); }
 }
 
 /* ══════════════════════════════════════════════════════════

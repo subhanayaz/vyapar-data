@@ -140,6 +140,13 @@ export function CoinFixed() {
   const tiltRef  = useRef<HTMLDivElement>(null);
   const coinRef  = useRef<HTMLDivElement>(null);
 
+  /* Desktop only: true while the intro toss (below) owns coin.rotateY
+     and tiltRef's transform - the scroll x-position effect and the
+     mouse-parallax effect both drive those same properties continuously
+     from mount, so without this they'd fight the intro's tween every
+     frame and cancel it out. */
+  const desktopIntroActiveRef = useRef(false);
+
   useEffect(() => {
     if (!pageReady) return;
     const el = coinRef.current;
@@ -150,19 +157,33 @@ export function CoinFixed() {
     return () => { t.kill(); };
   }, [pageReady]);
 
-  /* ── Intro: coin drops in from above on first load (desktop only -
-     mobile gets the fuller cinematic sequence below instead). ────── */
+  /* ── Intro: desktop's own flourish - the coin stays put at its resting
+     spot (no drop-in, no travel) and rolls through about 7 full spins,
+     decelerating into a stop right where it already is - instead of
+     coming in standalone from top to centre.
+     coin.rotateY is otherwise driven every frame by the scroll
+     x-position effect - desktopIntroActiveRef tells it to stand down
+     for the spin's duration so it doesn't fight this tween and cancel
+     it out. */
   useEffect(() => {
     if (!pageReady) return;
     if (window.matchMedia("(max-width: 900px)").matches) return;
 
-    const pos = posRef.current;
-    if (!pos) return;
+    const coin = coinRef.current;
+    if (!coin) return;
 
-    const tween = gsap.to(pos, {
-      y: 0, duration: 1.4, delay: 0.3, ease: "power3.out",
-    });
-    return () => { tween.kill(); };
+    desktopIntroActiveRef.current = true;
+
+    const tween = gsap.fromTo(coin,
+      { rotateY: 0 },
+      { rotateY: 360 * 4, duration: 2.2, delay: 0.3, ease: "power3.out" },
+    );
+    tween.eventCallback("onComplete", () => { desktopIntroActiveRef.current = false; });
+
+    return () => {
+      tween.kill();
+      desktopIntroActiveRef.current = false;
+    };
   }, [pageReady]);
 
   /* ── Mobile: cinematic intro - the coin is already visible at rest
@@ -365,6 +386,10 @@ export function CoinFixed() {
     const SETTLE_MS = 400;
 
     const tick = () => {
+      if (desktopIntroActiveRef.current) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       const { x: tx, rot: tr } = targetFor(window.scrollY);
       if (performance.now() - mountedAt < SETTLE_MS) {
         curX = tx;
