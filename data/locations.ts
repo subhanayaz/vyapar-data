@@ -42,7 +42,7 @@ export const LOCATION_REGIONS: LocationRegion[] = [
       state("rajasthan", "Rajasthan"),
     ],
     cities: [
-      city("delhi-ncr", "Delhi NCR", 1),
+      city("delhi", "Delhi", 1),
       city("jaipur", "Jaipur", 1),
       city("lucknow", "Lucknow", 1),
       city("kanpur", "Kanpur", 1),
@@ -168,14 +168,21 @@ export type FooterLocationSections = {
   regionPacks: ServiceLocation[];
 };
 
+function byDemand(a: ServiceLocation, b: ServiceLocation): number {
+  const tierA = a.tier ?? 2;
+  const tierB = b.tier ?? 2;
+  if (tierA !== tierB) return tierA - tierB;
+  return a.name.localeCompare(b.name);
+}
+
 export function getFooterLocationSections(): FooterLocationSections {
   const allCities = LOCATION_REGIONS.flatMap((region) => region.cities);
 
   return {
-    states: LOCATION_REGIONS.flatMap((region) => region.states),
-    metroCities: allCities.filter((entry) => entry.tier === 1),
-    otherCities: allCities.filter((entry) => entry.tier !== 1),
-    regionPacks: LOCATION_REGIONS.flatMap((region) => region.regionPacks),
+    states: LOCATION_REGIONS.flatMap((region) => region.states).sort(byDemand),
+    metroCities: allCities.filter((entry) => entry.tier === 1).sort(byDemand),
+    otherCities: allCities.filter((entry) => entry.tier !== 1).sort(byDemand),
+    regionPacks: LOCATION_REGIONS.flatMap((region) => region.regionPacks).sort(byDemand),
   };
 }
 

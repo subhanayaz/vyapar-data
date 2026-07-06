@@ -7,6 +7,8 @@ import { RelatedLocations } from "@/components/layout/FooterLocations";
 import {
   LocationCategoryGrid,
   LocationCoverage,
+  LocationSampleTable,
+  LocationSteps,
 } from "@/components/sections/LocationDetailSections";
 import { LocationRequestSection } from "@/components/sections/LocationRequestSection";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
@@ -150,6 +152,9 @@ export default async function LocationPage({ params }: LocationPageProps) {
               </p>
             </ScrollReveal>
             <LocationCoverage />
+            <ScrollReveal delay={100}>
+              <LocationSampleTable location={location} />
+            </ScrollReveal>
           </div>
         </section>
 
@@ -161,26 +166,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
             <ScrollReveal delay={80}>
               <h2 className="sec-h">From {location.name} target to file</h2>
             </ScrollReveal>
-            <ScrollReveal delay={140}>
-              <ol className="loc-steps">
-                <li>
-                  <span className="loc-step-n">01</span>
-                  <p>Tell us your industry, audience, and how many {location.name} leads you need.</p>
-                </li>
-                <li>
-                  <span className="loc-step-n">02</span>
-                  <p>We send a free sample so you can judge the data quality first.</p>
-                </li>
-                <li>
-                  <span className="loc-step-n">03</span>
-                  <p>Approve the quote — a one-time payment, no subscription.</p>
-                </li>
-                <li>
-                  <span className="loc-step-n">04</span>
-                  <p>Get the full Excel or CSV file on email and WhatsApp.</p>
-                </li>
-              </ol>
-            </ScrollReveal>
+            <LocationSteps locationName={location.name} />
           </div>
         </section>
 

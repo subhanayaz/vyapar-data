@@ -1388,7 +1388,7 @@ footer.site-footer {
 .foot-locations {
   border-bottom: 1px solid var(--glass-b);
   padding-bottom: 2rem;
-  margin-bottom: 1.5rem;
+  /* margin-bottom: 1.5rem; */
 }
 .foot-locations-title {
   font-family: var(--font-space-grotesk), sans-serif;
@@ -1572,59 +1572,78 @@ footer.site-footer {
 }
 .loc-cat-card:hover .loc-cat-cta { color: var(--white); }
 
-.loc-coverage-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  background: var(--glass-b);
+.loc-section .sample-table-section { margin-top: 2.5rem; }
+
+/* ── Box slider (swipeable card row) ───────────────────── */
+.box-slider { margin-top: 2rem; }
+.box-slider-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 0.25rem;
+}
+.box-slider-track::-webkit-scrollbar { display: none; }
+
+.box-slider-nav { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1.2rem; }
+.box-slider-arrow {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--glass-b);
-}
-.loc-coverage-item {
-  background: rgba(0,0,0,0.5);
-  padding: 1.8rem 1.6rem;
-  transition: background 0.3s;
-}
-.loc-coverage-item:hover { background: rgba(255,255,255,0.04); }
-.loc-coverage-label {
-  font-family: var(--font-space-grotesk), sans-serif;
-  font-weight: 600;
-  font-size: 1.02rem;
-  color: var(--white);
-  margin-bottom: 0.5rem;
-}
-.loc-coverage-detail {
-  font-family: var(--font-inter), sans-serif;
-  font-size: var(--text-sm);
-  line-height: 1.65;
+  border-radius: 999px;
+  background: transparent;
   color: var(--gray-dim);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.22s, border-color 0.22s, background 0.22s, opacity 0.22s;
+}
+.box-slider-arrow:hover:not(:disabled) {
+  color: var(--white);
+  border-color: rgba(255,255,255,0.28);
+  background: var(--glass);
+}
+.box-slider-arrow:disabled { opacity: 0.28; cursor: default; }
+
+.loc-coverage-card {
+  flex: 0 0 auto;
+  width: min(240px, 72vw);
+  padding: 1.6rem;
+  border: 1px solid var(--glass-b);
+  background: rgba(0,0,0,0.5);
+  scroll-snap-align: start;
+  transition: background 0.25s, border-color 0.25s;
+}
+.loc-coverage-card:hover { background: var(--glass); border-color: rgba(255,255,255,0.16); }
+.loc-coverage-card .draw-icon { color: var(--gray-dim); margin-bottom: 1rem; transition: color 0.25s; }
+.loc-coverage-card:hover .draw-icon { color: var(--white); }
+
+/* Industries and How it works: full grid on desktop/tablet, swipeable
+   slider only on mobile - each renders both blocks, one hidden via CSS. */
+.loc-slider-mobile { display: none; }
+
+.loc-slider-mobile .loc-step-card {
+  flex: 0 0 auto;
+  width: min(260px, 78vw);
+  border: 1px solid var(--glass-b);
+  scroll-snap-align: start;
+}
+.loc-slider-mobile .loc-cat-card {
+  flex: 0 0 78vw;
+  border: 1px solid var(--glass-b);
+  scroll-snap-align: start;
 }
 
-.loc-steps {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1px;
-  background: var(--glass-b);
-  border: 1px solid var(--glass-b);
+@media (max-width: 560px) {
+  .loc-grid-desktop { display: none; }
+  .loc-slider-mobile { display: block; }
 }
-.loc-steps li {
-  background: rgba(0,0,0,0.5);
-  padding: 1.8rem 1.5rem;
-}
-.loc-step-n {
-  display: block;
-  font-family: var(--font-space-grotesk), sans-serif;
-  font-weight: 700;
-  font-size: 1.6rem;
-  color: rgba(255,255,255,0.09);
-  margin-bottom: 1rem;
-}
-.loc-steps p {
-  font-family: var(--font-inter), sans-serif;
-  font-size: var(--text-sm);
-  line-height: 1.65;
-  color: var(--gray-dim);
-}
+
 .loc-related-title {
   font-family: var(--font-space-grotesk), sans-serif;
   font-weight: 600;
@@ -1642,7 +1661,12 @@ footer.site-footer {
 }
 .loc-contact-note strong { color: var(--white); font-weight: 600; }
 
-.location-request-section { max-width: 960px; }
+.location-request-section { max-width: 1120px; }
+/* Compact form gets a 3-up field grid here (vs. the homepage's fixed
+   2-up) so it fills the wider section instead of hugging the left edge. */
+.location-request-section .contact-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
 .location-request-title {
   font-family: var(--font-space-grotesk), sans-serif;
   font-weight: 700;
@@ -1698,7 +1722,7 @@ footer.site-footer {
 }
 .location-related-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2.5rem 2rem;
   margin-top: 2rem;
 }
@@ -1707,7 +1731,6 @@ footer.site-footer {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem 1.4rem;
-  max-width: 720px;
 }
 .location-related-list a {
   font-family: var(--font-inter), sans-serif;
@@ -1722,7 +1745,7 @@ footer.site-footer {
    layer on top, revealed via background-clip:text. */
 .foot-mark-wrap {
   position: relative;
-  margin: 1rem 0 2.5rem;
+  margin-bottom: 2rem;
   cursor: default;
   overflow: hidden;
 }
@@ -1739,7 +1762,7 @@ footer.site-footer {
      pre-JS fallback so nothing flashes oversized before that runs. */
   font-size: var(--fs, clamp(2.6rem, 11vw, 9.5rem));
   letter-spacing: -0.03em;
-  line-height: 0.92;
+  line-height: 1.1;
   white-space: nowrap;
   user-select: none;
 }
@@ -1932,8 +1955,6 @@ footer.site-footer {
 
   .loc-hero { padding: 7rem 0 3rem; }
   .loc-section { padding: 3.5rem 0; }
-  .loc-coverage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .loc-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .location-related-grid { grid-template-columns: 1fr; }
 }
 
@@ -1958,9 +1979,9 @@ footer.site-footer {
   .split-panel { padding: 2rem var(--gutter) 2.5rem; }
   .split-cards { padding: 2rem var(--gutter) 2rem; }
 
+  .location-request-section .contact-grid { grid-template-columns: 1fr; }
+
   .foot-location-row-list a { white-space: normal; }
 
-  .loc-coverage-grid { grid-template-columns: 1fr; }
-  .loc-steps { grid-template-columns: 1fr 1fr; }
   .loc-hero-stats li { flex-basis: 100%; }
 }
