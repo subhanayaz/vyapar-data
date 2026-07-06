@@ -5,6 +5,8 @@ export type LenisLike = {
     target: LenisScrollTarget,
     options?: { offset?: number; duration?: number; immediate?: boolean },
   ) => void;
+  stop: () => void;
+  start: () => void;
 };
 
 let lenisInstance: LenisLike | null = null;

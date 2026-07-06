@@ -150,9 +150,11 @@ export function CoinFixed() {
     return () => { t.kill(); };
   }, [pageReady]);
 
-  /* ── Intro: coin drops in from above on first load ────────────── */
+  /* ── Intro: coin drops in from above on first load (desktop only -
+     mobile gets the fuller cinematic sequence below instead). ────── */
   useEffect(() => {
     if (!pageReady) return;
+    if (window.matchMedia("(max-width: 900px)").matches) return;
 
     const pos = posRef.current;
     if (!pos) return;
@@ -161,6 +163,117 @@ export function CoinFixed() {
       y: 0, duration: 1.4, delay: 0.3, ease: "power3.out",
     });
     return () => { tween.kill(); };
+  }, [pageReady]);
+
+  /* ── Mobile: cinematic intro - the coin is already visible at rest
+     (centred, below the nav bar) from first paint - no drop-in from
+     above the screen. It's launched with a sharp rotational impulse
+     (fast spin + tumble right from the start, easing out) and tosses
+     itself up toward the top of the screen (just below the nav bar),
+     losing upward speed as it rises - real gravity decelerating a
+     toss - then falls from there all the way to the bottom, the fall
+     doing the opposite curve: it *starts* slow right at the apex and
+     keeps *accelerating* the whole way down (ease-in), like an actual
+     object under gravity. The spin/tumble keeps going the whole time,
+     settling into a graceful, decelerating tumble with a gentle
+     residual wobble as "gravity takes over" on the way down. The page
+     auto-scrolls to the Hero right as the coin clears the screen.
+
+     Like a real toss, this can't be cut short once it's thrown - scroll
+     input (wheel/touch) and clicks (the logo doing a same-page nav, any
+     other link) are blocked for its exact duration, then released right
+     as the auto-scroll takes over. Without this, scrolling (or a click
+     that scrolled the page, e.g. the logo) during the toss fed straight
+     into the scroll-linked fade/collapse effect below, which visibly
+     cut the animation off mid-flight. ────────────────────────────────*/
+  useEffect(() => {
+    if (!pageReady) return;
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
+
+    const pos = posRef.current;
+    const tilt = tiltRef.current;
+    const coin = coinRef.current;
+    if (!pos) return;
+
+    const lenis = getLenisInstance();
+    const blockInteraction = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    document.documentElement.classList.add("coin-toss-lock");
+    lenis?.stop();
+    window.addEventListener("wheel", blockInteraction, { passive: false });
+    window.addEventListener("touchmove", blockInteraction, { passive: false });
+    document.addEventListener("click", blockInteraction, true);
+
+    const release = () => {
+      document.documentElement.classList.remove("coin-toss-lock");
+      lenis?.start();
+      window.removeEventListener("wheel", blockInteraction);
+      window.removeEventListener("touchmove", blockInteraction);
+      document.removeEventListener("click", blockInteraction, true);
+    };
+
+    const vh = window.innerHeight;
+    const RISE_DURATION = 0.75;
+    const FALL_DURATION = 1.85;
+    const TOTAL_DURATION = RISE_DURATION + FALL_DURATION;
+    const tl = gsap.timeline({ delay: 0.2 });
+
+    /* Rise: from rest (y:0, matching the CSS default so there's no jump
+       when this tween takes over) up toward the top, clearing the
+       nav bar (clip-path already keeps anything above that hidden).
+       Decelerating - a toss losing speed to gravity on the way up. */
+    tl.fromTo(pos,
+      { y: 0 },
+      { y: -(vh * 0.66), duration: RISE_DURATION, ease: "power2.out" },
+      0,
+    );
+    /* Fall: from the apex down past the bottom edge. Gravity-style
+       acceleration - slow right at the top, fastest right before it
+       clears the screen. */
+    tl.to(pos, { y: vh * 1.15, duration: FALL_DURATION, ease: "power2.in" }, RISE_DURATION);
+
+    /* Spin on the vertical axis - the "sharp impulse": fast right away,
+       decelerating (the opposite curve from the fall) so it visibly
+       settles down as it drops, like spin bleeding off to air
+       resistance while gravity keeps winning on the way down. */
+    if (coin) {
+      tl.fromTo(coin,
+        { rotateY: 0 },
+        { rotateY: 1080, duration: TOTAL_DURATION, ease: "power3.out" },
+        0,
+      );
+    }
+
+    /* Tumble end-over-end, same decelerating shape, then a small
+       residual wobble once it's essentially settled - "gently wobbles
+       as gravity takes over" - before it drops out of frame. */
+    if (tilt) {
+      tl.fromTo(tilt,
+        { rotateX: -8, rotateZ: -10 },
+        { rotateX: 430, rotateZ: 8, duration: TOTAL_DURATION * 0.75, ease: "power3.out" },
+        0,
+      );
+      tl.to(tilt, {
+        rotateZ: -6, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 3,
+      }, TOTAL_DURATION * 0.7);
+    }
+
+    tl.call(() => {
+      release();
+      if (lenis) {
+        lenis.scrollTo(vh, { duration: 1.1 });
+      } else {
+        window.scrollTo({ top: vh, behavior: "smooth" });
+      }
+    }, undefined, TOTAL_DURATION);
+
+    return () => {
+      tl.kill();
+      release();
+    };
   }, [pageReady]);
 
   /* ── X-position + flip: a single deterministic function of scrollY,
