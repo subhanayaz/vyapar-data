@@ -411,6 +411,55 @@ html.coin-toss-lock body {
   50%      { transform: translateY(-32px) scale(1.3); }
 }
 
+/* Page-wide soft dust - full viewport, above content */
+.ambient-dust {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.ambient-dust-dot {
+  position: absolute;
+  width: 2.5px;
+  height: 2.5px;
+  margin: -1.25px 0 0 -1.25px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.48);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.18);
+  animation-name: ambientDustDrift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@media (max-width: 900px) {
+  .ambient-dust-dot {
+    width: 2px;
+    height: 2px;
+    margin: -1px 0 0 -1px;
+    background: rgba(255, 255, 255, 0.36);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.12);
+  }
+}
+
+@keyframes ambientDustDrift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate3d(var(--dust-x, 6px), var(--dust-y, -10px), 0);
+    opacity: 0.65;
+  }
+}
+
 /* ══════════════════════════════════════════════════════════
    SCROLL REVEALS
 ══════════════════════════════════════════════════════════ */
@@ -505,8 +554,7 @@ html.coin-toss-lock body {
      takes over from this exact value, so there's no visible handoff.
      offset = min(vw, content-max) * 0.35 - 35vw below the 1400px cap,
      a fixed 490px (1400 * 0.35) above it.
-     No vertical offset - the coin stays put at its resting spot; the
-     intro (CoinFixed.tsx) spins it in place rather than moving it. */
+     No vertical offset - the coin stays put at its resting spot on load. */
   transform: translateX(35vw);
   will-change: transform;
 }

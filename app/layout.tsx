@@ -4,6 +4,7 @@ import "./globals.css";
 import { SITE } from "@/data/site";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
 import { PageLoadGate } from "@/components/providers/PageLoadGate";
+import { AmbientDust } from "@/components/ui/AmbientDust";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({
     <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`}>
       <body suppressHydrationWarning>
         <PageLoadGate>
+          <AmbientDust />
           <SmoothScroll>{children}</SmoothScroll>
         </PageLoadGate>
       </body>
